@@ -1,0 +1,162 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  STAFF
+}
+
+enum OrderStatus {
+  OPEN
+  PAID
+  CANCELLED
+}
+
+enum PaymentType {
+  CASH
+  CARD
+}
+
+enum CouponType {
+  PERCENTAGE
+  FIXED
+}
+
+model User {
+  id         String    @id @default(uuid())
+  name       String
+  email      String    @unique
+  password   String
+  role       Role
+  is_deleted Boolean   @default(false)
+  orders     Order[]   @relation("UserOrders")
+  receipts   Receipt[] @relation("PrintedByUser")
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+
+  @@index([is_deleted])
+  @@map("user")
+}
+
+model Category {
+  id         String    @id @default(uuid())
+  name       String
+  image      String?
+  is_deleted Boolean   @default(false)
+  products   Product[]
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+
+  @@index([name])
+  @@index([is_deleted])
+  @@map("category")
+}
+
+model Product {
+  id           String      @id @default(uuid())
+  name         String
+  price        Decimal
+  image        String?
+  is_available Boolean     @default(true)
+  is_deleted   Boolean     @default(false)
+  category_id  String
+  category     Category    @relation(fields: [category_id], references: [id], onDelete: Restrict)
+  order_items  OrderItem[]
+  created_at   DateTime    @default(now())
+  updated_at   DateTime    @updatedAt
+
+  @@index([category_id])
+  @@index([is_available])
+  @@index([category_id, is_available])
+  @@index([is_deleted])
+  @@map("product")
+}
+
+model Order {
+  id           String      @id @default(uuid())
+  order_number String      @unique
+  total_amount Decimal
+  status       OrderStatus
+  payment_type PaymentType
+  table_number String?
+  note         String?
+  created_by   String
+  user         User        @relation("UserOrders", fields: [created_by], references: [id], onDelete: Restrict)
+  order_items  OrderItem[]
+  receipt      Receipt?
+  created_at   DateTime    @default(now())
+  updated_at   DateTime    @updatedAt
+
+  @@index([created_by])
+  @@index([status])
+  @@index([created_at])
+  @@index([created_by, status])
+  @@map("order")
+}
+
+model OrderItem {
+  id         String  @id @default(uuid())
+  order_id   String
+  product_id String
+  quantity   Int
+  price      Decimal
+  order      Order   @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  product    Product @relation(fields: [product_id], references: [id], onDelete: Restrict)
+
+  @@index([order_id])
+  @@index([product_id])
+  @@map("order_item")
+}
+
+model Receipt {
+  id         String   @id @default(uuid())
+  order_id   String   @unique
+  printed_at DateTime @default(now())
+  printed_by String?
+  order      Order    @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  user       User?    @relation("PrintedByUser", fields: [printed_by], references: [id], onDelete: SetNull)
+
+  @@index([printed_by])
+  @@index([printed_at])
+  @@map("receipt")
+}
+
+model Coupon {
+  id         String     @id @default(uuid())
+  code       String     @unique
+  type       CouponType
+  value      Decimal
+  is_active  Boolean    @default(true)
+  is_deleted Boolean    @default(false)
+  expires_at DateTime?
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
+
+  @@index([is_active])
+  @@index([expires_at])
+  @@index([code, is_active])
+  @@index([is_deleted])
+  @@map("coupon")
+}
+
+model Setting {
+  id                   String   @id @default(uuid())
+  restaurant_name      String
+  address              String
+  phone_number         String
+  email                String
+  logo_url             String
+  receipt_header_text  String
+  receipt_footer_text  String
+  show_logo_on_receipt Boolean  @default(true)
+  created_at           DateTime @default(now())
+  updated_at           DateTime @updatedAt
+
+  @@map("setting")
+}
