@@ -2,27 +2,19 @@ import express from 'express';
 import { AuthRoutes } from '../modules/auth/auth.routes';
 import { ProductRoutes } from '../modules/product/product.routes';
 import { CategoryRoutes } from '../modules/category/category.routes';
+import { UserRoutes } from '../modules/user/user.routes';
+import { OrderRoutes } from '../modules/order/order.routes';
 
 const router = express.Router();
 
-type Route = {
-  path: string;
-  route: express.Router;
-};
+type Route = { path: string; route: express.Router };
 
 const routes: Route[] = [
-  {
-    path: '/auth',
-    route: AuthRoutes,
-  },
-  {
-    path: '/products',
-    route: ProductRoutes,
-  },
-  {
-    path: '/categories',
-    route: CategoryRoutes,
-  },
+  { path: '/auth', route: AuthRoutes },
+  { path: '/products', route: ProductRoutes },
+  { path: '/categories', route: CategoryRoutes },
+  { path: '/users', route: UserRoutes },
+  { path: '/orders', route: OrderRoutes },
 ];
 
 routes.forEach((route) => {

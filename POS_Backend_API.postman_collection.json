@@ -110,6 +110,481 @@
       ]
     },
     {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["users"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users?search=doe&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["users"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "doe"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Filter Users by Role",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users?role=STAFF&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["users"],
+              "query": [
+                {
+                  "key": "role",
+                  "value": "STAFF"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Complex User Filter",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users?search=doe&role=STAFF&sort_by=name&sort_order=asc&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["users"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "doe"
+                },
+                {
+                  "key": "role",
+                  "value": "STAFF"
+                },
+                {
+                  "key": "sort_by",
+                  "value": "name"
+                },
+                {
+                  "key": "sort_order",
+                  "value": "asc"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('user_id', response.data.id);",
+                  "    pm.test('User created successfully', function () {",
+                  "        pm.expect(response.success).to.be.true;",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john.doe@pos.com\",\n  \"password\": \"password123\",\n  \"role\": \"STAFF\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": ["{{base_url}}"],
+              "path": ["users"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Smith\",\n  \"role\": \"ADMIN\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reset User Password",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"new_password\": \"newpassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}/password",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}", "password"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "Get All Orders",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/orders?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["orders"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Filter Orders by Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/orders?status=PAID&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["orders"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "PAID"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Filter Orders by Payment Type",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/orders?payment_type=CARD&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["orders"],
+              "query": [
+                {
+                  "key": "payment_type",
+                  "value": "CARD"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Filter Orders by Date Range",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/orders?date_from=2023-05-01&date_to=2023-05-24&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["orders"],
+              "query": [
+                {
+                  "key": "date_from",
+                  "value": "2023-05-01"
+                },
+                {
+                  "key": "date_to",
+                  "value": "2023-05-24"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Complex Order Filter",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/orders?status=PAID&payment_type=CARD&date_from=2023-05-01&date_to=2023-05-24&sort_by=created_at&sort_order=desc&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["orders"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "PAID"
+                },
+                {
+                  "key": "payment_type",
+                  "value": "CARD"
+                },
+                {
+                  "key": "date_from",
+                  "value": "2023-05-01"
+                },
+                {
+                  "key": "date_to",
+                  "value": "2023-05-24"
+                },
+                {
+                  "key": "sort_by",
+                  "value": "created_at"
+                },
+                {
+                  "key": "sort_order",
+                  "value": "desc"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Order Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/orders/{{order_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["orders", "{{order_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Order",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('order_id', response.data.id);",
+                  "    pm.test('Order created successfully', function () {",
+                  "        pm.expect(response.success).to.be.true;",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payment_type\": \"CASH\",\n  \"table_number\": \"T-001\",\n  \"note\": \"Extra spicy\",\n  \"order_items\": [\n    {\n      \"product_id\": \"{{product_id}}\",\n      \"quantity\": 2,\n      \"price\": 12.99\n    },\n    {\n      \"product_id\": \"{{product_id}}\",\n      \"quantity\": 1,\n      \"price\": 4.99\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/orders",
+              "host": ["{{base_url}}"],
+              "path": ["orders"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Change Order Status to PAID",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"PAID\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/orders/{{order_id}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["orders", "{{order_id}}", "status"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Change Order Status to CANCELLED",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"CANCELLED\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/orders/{{order_id}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["orders", "{{order_id}}", "status"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "Categories",
       "item": [
         {
@@ -203,44 +678,6 @@
           "response": []
         },
         {
-          "name": "Complex Category Filter",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/categories?search=fast&sort_by=created_at&sort_order=desc&page=1&limit=5",
-              "host": ["{{base_url}}"],
-              "path": ["categories"],
-              "query": [
-                {
-                  "key": "search",
-                  "value": "fast"
-                },
-                {
-                  "key": "sort_by",
-                  "value": "created_at"
-                },
-                {
-                  "key": "sort_order",
-                  "value": "desc"
-                },
-                {
-                  "key": "page",
-                  "value": "1"
-                },
-                {
-                  "key": "limit",
-                  "value": "5"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
           "name": "Create Category (with Image)",
           "event": [
             {
@@ -288,29 +725,6 @@
           "response": []
         },
         {
-          "name": "Create Category (without Image)",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "formdata",
-              "formdata": [
-                {
-                  "key": "name",
-                  "value": "Simple Category",
-                  "type": "text"
-                }
-              ]
-            },
-            "url": {
-              "raw": "{{base_url}}/categories",
-              "host": ["{{base_url}}"],
-              "path": ["categories"]
-            }
-          },
-          "response": []
-        },
-        {
           "name": "Update Category",
           "request": {
             "method": "PATCH",
@@ -322,12 +736,6 @@
                   "key": "name",
                   "value": "Updated Category Name",
                   "type": "text"
-                },
-                {
-                  "key": "image",
-                  "type": "file",
-                  "src": [],
-                  "disabled": true
                 }
               ]
             },
@@ -335,42 +743,6 @@
               "raw": "{{base_url}}/categories/{{category_id}}",
               "host": ["{{base_url}}"],
               "path": ["categories", "{{category_id}}"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Update Category Image Only",
-          "request": {
-            "method": "PATCH",
-            "header": [],
-            "body": {
-              "mode": "formdata",
-              "formdata": [
-                {
-                  "key": "image",
-                  "type": "file",
-                  "src": []
-                }
-              ]
-            },
-            "url": {
-              "raw": "{{base_url}}/categories/{{category_id}}/image",
-              "host": ["{{base_url}}"],
-              "path": ["categories", "{{category_id}}", "image"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Delete Category Image",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/categories/{{category_id}}/image",
-              "host": ["{{category_id}}"],
-              "path": ["categories", "{{category_id}}", "image"]
             }
           },
           "response": []
@@ -406,176 +778,6 @@
               "host": ["{{base_url}}"],
               "path": ["products"],
               "query": [
-                {
-                  "key": "page",
-                  "value": "1"
-                },
-                {
-                  "key": "limit",
-                  "value": "10"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Search Products",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/products?search=burger&page=1&limit=10",
-              "host": ["{{base_url}}"],
-              "path": ["products"],
-              "query": [
-                {
-                  "key": "search",
-                  "value": "burger"
-                },
-                {
-                  "key": "page",
-                  "value": "1"
-                },
-                {
-                  "key": "limit",
-                  "value": "10"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Filter by Category",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/products?category_id={{category_id}}&page=1&limit=10",
-              "host": ["{{base_url}}"],
-              "path": ["products"],
-              "query": [
-                {
-                  "key": "category_id",
-                  "value": "{{category_id}}"
-                },
-                {
-                  "key": "page",
-                  "value": "1"
-                },
-                {
-                  "key": "limit",
-                  "value": "10"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Filter by Availability",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/products?availability=true&page=1&limit=10",
-              "host": ["{{base_url}}"],
-              "path": ["products"],
-              "query": [
-                {
-                  "key": "availability",
-                  "value": "true"
-                },
-                {
-                  "key": "page",
-                  "value": "1"
-                },
-                {
-                  "key": "limit",
-                  "value": "10"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Sort Products by Price",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/products?sort_by=price&sort_order=asc&page=1&limit=10",
-              "host": ["{{base_url}}"],
-              "path": ["products"],
-              "query": [
-                {
-                  "key": "sort_by",
-                  "value": "price"
-                },
-                {
-                  "key": "sort_order",
-                  "value": "asc"
-                },
-                {
-                  "key": "page",
-                  "value": "1"
-                },
-                {
-                  "key": "limit",
-                  "value": "10"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Complex Filter",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/products?search=burger&category_id={{category_id}}&availability=true&sort_by=name&sort_order=asc&page=1&limit=10",
-              "host": ["{{base_url}}"],
-              "path": ["products"],
-              "query": [
-                {
-                  "key": "search",
-                  "value": "burger"
-                },
-                {
-                  "key": "category_id",
-                  "value": "{{category_id}}"
-                },
-                {
-                  "key": "availability",
-                  "value": "true"
-                },
-                {
-                  "key": "sort_by",
-                  "value": "name"
-                },
-                {
-                  "key": "sort_order",
-                  "value": "asc"
-                },
                 {
                   "key": "page",
                   "value": "1"
@@ -633,50 +835,6 @@
                   "key": "is_available",
                   "value": "true",
                   "type": "text"
-                },
-                {
-                  "key": "image",
-                  "type": "file",
-                  "src": [],
-                  "disabled": true
-                }
-              ]
-            },
-            "url": {
-              "raw": "{{base_url}}/products",
-              "host": ["{{base_url}}"],
-              "path": ["products"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create Product (without Image)",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "formdata",
-              "formdata": [
-                {
-                  "key": "name",
-                  "value": "Simple Product",
-                  "type": "text"
-                },
-                {
-                  "key": "price",
-                  "value": "8.99",
-                  "type": "text"
-                },
-                {
-                  "key": "category_id",
-                  "value": "{{category_id}}",
-                  "type": "text"
-                },
-                {
-                  "key": "is_available",
-                  "value": "true",
-                  "type": "text"
                 }
               ]
             },
@@ -717,29 +875,6 @@
           "response": []
         },
         {
-          "name": "Update Product Image",
-          "request": {
-            "method": "PATCH",
-            "header": [],
-            "body": {
-              "mode": "formdata",
-              "formdata": [
-                {
-                  "key": "image",
-                  "type": "file",
-                  "src": []
-                }
-              ]
-            },
-            "url": {
-              "raw": "{{base_url}}/products/{{product_id}}/image",
-              "host": ["{{base_url}}"],
-              "path": ["products", "{{product_id}}", "image"]
-            }
-          },
-          "response": []
-        },
-        {
           "name": "Toggle Product Availability",
           "request": {
             "method": "PATCH",
@@ -757,19 +892,6 @@
               "raw": "{{base_url}}/products/{{product_id}}/availability",
               "host": ["{{base_url}}"],
               "path": ["products", "{{product_id}}", "availability"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Delete Product Image",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/products/{{product_id}}/image",
-              "host": ["{{base_url}}"],
-              "path": ["products", "{{product_id}}", "image"]
             }
           },
           "response": []
@@ -836,6 +958,16 @@
     },
     {
       "key": "category_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "order_id",
       "value": "",
       "type": "string"
     }

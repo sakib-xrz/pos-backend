@@ -127,24 +127,6 @@ model Receipt {
   @@map("receipt")
 }
 
-model Coupon {
-  id         String     @id @default(uuid())
-  code       String     @unique
-  type       CouponType
-  value      Decimal
-  is_active  Boolean    @default(true)
-  is_deleted Boolean    @default(false)
-  expires_at DateTime?
-  created_at DateTime   @default(now())
-  updated_at DateTime   @updatedAt
-
-  @@index([is_active])
-  @@index([expires_at])
-  @@index([code, is_active])
-  @@index([is_deleted])
-  @@map("coupon")
-}
-
 model Setting {
   id                   String   @id @default(uuid())
   restaurant_name      String
