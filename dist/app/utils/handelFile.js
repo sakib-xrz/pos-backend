@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteFromCloudinary = exports.uploadToCloudinary = exports.upload = void 0;
+exports.extractPublicIdFromUrl = exports.deleteFromCloudinary = exports.uploadToCloudinary = exports.upload = void 0;
 const multer_1 = __importDefault(require("multer"));
 const path_1 = __importDefault(require("path"));
 const cloudinary_1 = require("cloudinary");
@@ -77,3 +77,21 @@ const deleteFromCloudinary = (publicIds) => __awaiter(void 0, void 0, void 0, fu
     });
 });
 exports.deleteFromCloudinary = deleteFromCloudinary;
+const extractPublicIdFromUrl = (url) => {
+    try {
+        const urlParts = url.split('/');
+        const uploadIndex = urlParts.findIndex((part) => part === 'upload');
+        if (uploadIndex !== -1 && urlParts[uploadIndex + 2]) {
+            const publicIdWithExtension = urlParts.slice(uploadIndex + 2).join('/');
+            // Remove file extension
+            const publicId = publicIdWithExtension.replace(/\.[^/.]+$/, '');
+            return publicId;
+        }
+        return null;
+    }
+    catch (error) {
+        console.log('Error from cloudinary while extracting public id', error);
+        return null;
+    }
+};
+exports.extractPublicIdFromUrl = extractPublicIdFromUrl;

@@ -1,41 +1,11 @@
 {
   "info": {
+    "_postman_id": "dcc5ed2e-30a9-45c1-a62d-96e5de0039e1",
     "name": "POS Backend API",
     "description": "Complete API collection for POS Backend with Authentication and Product Management",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "25329986"
   },
-  "auth": {
-    "type": "bearer",
-    "bearer": [
-      {
-        "key": "token",
-        "value": "{{access_token}}",
-        "type": "string"
-      }
-    ]
-  },
-  "variable": [
-    {
-      "key": "base_url",
-      "value": "http://localhost:5000/api",
-      "type": "string"
-    },
-    {
-      "key": "access_token",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "product_id",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "category_id",
-      "value": "cat-food-001",
-      "type": "string"
-    }
-  ],
   "item": [
     {
       "name": "Authentication",
@@ -54,7 +24,9 @@
                   "        pm.expect(response.success).to.be.true;",
                   "    });",
                   "}"
-                ]
+                ],
+                "type": "text/javascript",
+                "packages": {}
               }
             }
           ],
@@ -68,14 +40,15 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"admin@pos.com\",\n  \"password\": \"admin123\"\n}"
+              "raw": "{\n  \"email\": \"admin@pos.com\",\n  \"password\": \"123456\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/auth/login",
               "host": ["{{base_url}}"],
               "path": ["auth", "login"]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Staff Login",
@@ -89,14 +62,15 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"staff@pos.com\",\n  \"password\": \"admin123\"\n}"
+              "raw": "{\n  \"email\": \"staff@pos.com\",\n  \"password\": \"123456\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/auth/login",
               "host": ["{{base_url}}"],
               "path": ["auth", "login"]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Get My Profile",
@@ -108,7 +82,8 @@
               "host": ["{{base_url}}"],
               "path": ["auth", "me"]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Change Password",
@@ -129,7 +104,289 @@
               "host": ["{{base_url}}"],
               "path": ["auth", "change-password"]
             }
-          }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "Get All Categories",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/categories?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["categories"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search Categories",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/categories?search=food&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["categories"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "food"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Sort Categories by Name",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/categories?sort_by=name&sort_order=asc&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["categories"],
+              "query": [
+                {
+                  "key": "sort_by",
+                  "value": "name"
+                },
+                {
+                  "key": "sort_order",
+                  "value": "asc"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Complex Category Filter",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/categories?search=fast&sort_by=created_at&sort_order=desc&page=1&limit=5",
+              "host": ["{{base_url}}"],
+              "path": ["categories"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "fast"
+                },
+                {
+                  "key": "sort_by",
+                  "value": "created_at"
+                },
+                {
+                  "key": "sort_order",
+                  "value": "desc"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "5"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Category (with Image)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('category_id', response.data.id);",
+                  "    pm.test('Category created successfully', function () {",
+                  "        pm.expect(response.success).to.be.true;",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "Test Category",
+                  "type": "text"
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": [],
+                  "disabled": true
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/categories",
+              "host": ["{{base_url}}"],
+              "path": ["categories"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Category (without Image)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "Simple Category",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/categories",
+              "host": ["{{base_url}}"],
+              "path": ["categories"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Category",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "Updated Category Name",
+                  "type": "text"
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": [],
+                  "disabled": true
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/categories/{{category_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["categories", "{{category_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Category Image Only",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/categories/{{category_id}}/image",
+              "host": ["{{base_url}}"],
+              "path": ["categories", "{{category_id}}", "image"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Category Image",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/categories/{{category_id}}/image",
+              "host": ["{{category_id}}"],
+              "path": ["categories", "{{category_id}}", "image"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Category",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/categories/{{category_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["categories", "{{category_id}}"]
+            }
+          },
+          "response": []
         }
       ]
     },
@@ -159,7 +416,8 @@
                 }
               ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Search Products",
@@ -188,7 +446,8 @@
                 }
               ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Filter by Category",
@@ -217,7 +476,8 @@
                 }
               ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Filter by Availability",
@@ -246,7 +506,8 @@
                 }
               ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Sort Products by Price",
@@ -279,7 +540,8 @@
                 }
               ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Complex Filter",
@@ -324,10 +586,11 @@
                 }
               ]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "Create Product (with Image)",
+          "name": "Create Product",
           "event": [
             {
               "listen": "test",
@@ -340,7 +603,8 @@
                   "        pm.expect(response.success).to.be.true;",
                   "    });",
                   "}"
-                ]
+                ],
+                "type": "text/javascript"
               }
             }
           ],
@@ -383,7 +647,8 @@
               "host": ["{{base_url}}"],
               "path": ["products"]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Create Product (without Image)",
@@ -420,7 +685,8 @@
               "host": ["{{base_url}}"],
               "path": ["products"]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Update Product",
@@ -439,12 +705,6 @@
                   "key": "price",
                   "value": "19.99",
                   "type": "text"
-                },
-                {
-                  "key": "image",
-                  "type": "file",
-                  "src": [],
-                  "disabled": true
                 }
               ]
             },
@@ -453,10 +713,11 @@
               "host": ["{{base_url}}"],
               "path": ["products", "{{product_id}}"]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "Update Product Image Only",
+          "name": "Update Product Image",
           "request": {
             "method": "PATCH",
             "header": [],
@@ -475,19 +736,8 @@
               "host": ["{{base_url}}"],
               "path": ["products", "{{product_id}}", "image"]
             }
-          }
-        },
-        {
-          "name": "Delete Product Image",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/products/{{product_id}}/image",
-              "host": ["{{base_url}}"],
-              "path": ["products", "{{product_id}}", "image"]
-            }
-          }
+          },
+          "response": []
         },
         {
           "name": "Toggle Product Availability",
@@ -508,7 +758,21 @@
               "host": ["{{base_url}}"],
               "path": ["products", "{{product_id}}", "availability"]
             }
-          }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Product Image",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/products/{{product_id}}/image",
+              "host": ["{{base_url}}"],
+              "path": ["products", "{{product_id}}", "image"]
+            }
+          },
+          "response": []
         },
         {
           "name": "Delete Product",
@@ -520,9 +784,60 @@
               "host": ["{{base_url}}"],
               "path": ["products", "{{product_id}}"]
             }
-          }
+          },
+          "response": []
         }
       ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "exec": [""]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "product_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "category_id",
+      "value": "",
+      "type": "string"
     }
   ]
 }

@@ -141,7 +141,7 @@ const CreateProduct = async (
       });
       imageUrl = uploadResult?.secure_url;
     } catch (error) {
-      console.log('Error from cloudinary while uploading image', error);
+      console.log('Error from cloudinary while uploading product image', error);
       throw new AppError(
         httpStatus.BAD_REQUEST,
         'Failed to upload product image',
@@ -272,7 +272,7 @@ const UpdateProductImage = async (id: string, file: Express.Multer.File) => {
 
     return updatedProduct;
   } catch (error) {
-    console.log('Error from cloudinary while updating image', error);
+    console.log('Error from cloudinary while updating product image', error);
     throw new AppError(
       httpStatus.BAD_REQUEST,
       'Failed to update product image',
@@ -329,7 +329,7 @@ const DeleteProductImage = async (id: string) => {
 
     return updatedProduct;
   } catch (error) {
-    console.log('Error from cloudinary while deleting image', error);
+    console.log('Error from cloudinary while deleting product image', error);
     throw new AppError(
       httpStatus.BAD_REQUEST,
       'Failed to delete product image',
