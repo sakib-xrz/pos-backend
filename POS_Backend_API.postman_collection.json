@@ -365,7 +365,8 @@
               "query": [
                 {
                   "key": "status",
-                  "value": "PAID"
+                  "value": "PAID",
+                  "description": "Available values: OPEN, PAID, CANCELLED"
                 },
                 {
                   "key": "page",
@@ -392,7 +393,8 @@
               "query": [
                 {
                   "key": "payment_type",
-                  "value": "CARD"
+                  "value": "CARD",
+                  "description": "Available values: CASH, CARD"
                 },
                 {
                   "key": "page",
@@ -413,17 +415,19 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/orders?date_from=2023-05-01&date_to=2023-05-24&page=1&limit=10",
+              "raw": "{{base_url}}/orders?date_from=2024-01-01&date_to=2024-12-31&page=1&limit=10",
               "host": ["{{base_url}}"],
               "path": ["orders"],
               "query": [
                 {
                   "key": "date_from",
-                  "value": "2023-05-01"
+                  "value": "2024-01-01",
+                  "description": "Start date (YYYY-MM-DD format)"
                 },
                 {
                   "key": "date_to",
-                  "value": "2023-05-24"
+                  "value": "2024-12-31",
+                  "description": "End date (YYYY-MM-DD format)"
                 },
                 {
                   "key": "page",
@@ -444,7 +448,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/orders?status=PAID&payment_type=CARD&date_from=2023-05-01&date_to=2023-05-24&sort_by=created_at&sort_order=desc&page=1&limit=10",
+              "raw": "{{base_url}}/orders?status=PAID&payment_type=CARD&date_from=2024-01-01&date_to=2024-12-31&sort_by=created_at&sort_order=desc&page=1&limit=10",
               "host": ["{{base_url}}"],
               "path": ["orders"],
               "query": [
@@ -458,19 +462,21 @@
                 },
                 {
                   "key": "date_from",
-                  "value": "2023-05-01"
+                  "value": "2024-01-01"
                 },
                 {
                   "key": "date_to",
-                  "value": "2023-05-24"
+                  "value": "2024-12-31"
                 },
                 {
                   "key": "sort_by",
-                  "value": "created_at"
+                  "value": "created_at",
+                  "description": "Sort field (created_at, total_amount, etc.)"
                 },
                 {
                   "key": "sort_order",
-                  "value": "desc"
+                  "value": "desc",
+                  "description": "Sort order (asc or desc)"
                 },
                 {
                   "key": "page",
@@ -539,7 +545,29 @@
           "response": []
         },
         {
-          "name": "Change Order Status to PAID",
+          "name": "Update Order Status to OPEN",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"OPEN\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/orders/{{order_id}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["orders", "{{order_id}}", "status"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Order Status to PAID",
           "request": {
             "method": "PATCH",
             "header": [
@@ -561,7 +589,7 @@
           "response": []
         },
         {
-          "name": "Change Order Status to CANCELLED",
+          "name": "Update Order Status to CANCELLED",
           "request": {
             "method": "PATCH",
             "header": [
@@ -578,6 +606,68 @@
               "raw": "{{base_url}}/orders/{{order_id}}/status",
               "host": ["{{base_url}}"],
               "path": ["orders", "{{order_id}}", "status"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Settings",
+      "item": [
+        {
+          "name": "Get Restaurant Settings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/setting",
+              "host": ["{{base_url}}"],
+              "path": ["setting"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Restaurant Settings",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurant_name\": \"My POS Restaurant\",\n  \"address\": \"123 Main Street, City, State 12345\",\n  \"phone_number\": \"+1234567890\",\n  \"email\": \"contact@myrestaurant.com\",\n  \"logo_url\": \"https://example.com/logo.png\",\n  \"receipt_header_text\": \"Welcome to Our Restaurant\",\n  \"receipt_footer_text\": \"Thank you for your visit!\",\n  \"show_logo_on_receipt\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/setting",
+              "host": ["{{base_url}}"],
+              "path": ["setting"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Partial Settings",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurant_name\": \"Updated Restaurant Name\",\n  \"phone_number\": \"+9876543210\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/setting",
+              "host": ["{{base_url}}"],
+              "path": ["setting"]
             }
           },
           "response": []

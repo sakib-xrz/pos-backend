@@ -84,7 +84,6 @@ model Order {
   total_amount Decimal
   status       OrderStatus
   payment_type PaymentType
-  table_number String?
   note         String?
   created_by   String
   user         User        @relation("UserOrders", fields: [created_by], references: [id], onDelete: Restrict)
