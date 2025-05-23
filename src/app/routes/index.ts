@@ -4,6 +4,7 @@ import { ProductRoutes } from '../modules/product/product.routes';
 import { CategoryRoutes } from '../modules/category/category.routes';
 import { UserRoutes } from '../modules/user/user.routes';
 import { OrderRoutes } from '../modules/order/order.routes';
+import { SettingRoutes } from '../modules/setting/setting.routes';
 
 const router = express.Router();
 
@@ -15,6 +16,7 @@ const routes: Route[] = [
   { path: '/categories', route: CategoryRoutes },
   { path: '/users', route: UserRoutes },
   { path: '/orders', route: OrderRoutes },
+  { path: '/setting', route: SettingRoutes },
 ];
 
 routes.forEach((route) => {
