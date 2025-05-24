@@ -5,6 +5,7 @@ import { CategoryRoutes } from '../modules/category/category.routes';
 import { UserRoutes } from '../modules/user/user.routes';
 import { OrderRoutes } from '../modules/order/order.routes';
 import { SettingRoutes } from '../modules/setting/setting.routes';
+import { StatsRoutes } from '../modules/stats/stats.routes';
 
 const router = express.Router();
 
@@ -17,6 +18,7 @@ const routes: Route[] = [
   { path: '/users', route: UserRoutes },
   { path: '/orders', route: OrderRoutes },
   { path: '/setting', route: SettingRoutes },
+  { path: '/stats', route: StatsRoutes },
 ];
 
 routes.forEach((route) => {

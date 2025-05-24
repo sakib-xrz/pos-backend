@@ -853,6 +853,50 @@
       ]
     },
     {
+      "name": "Stats",
+      "item": [
+        {
+          "name": "Get Summary Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/stats/summary",
+              "host": ["{{base_url}}"],
+              "path": ["stats", "summary"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Weekly Sales",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/stats/weekly-sales",
+              "host": ["{{base_url}}"],
+              "path": ["stats", "weekly-sales"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Category Sales",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/stats/category-sales",
+              "host": ["{{base_url}}"],
+              "path": ["stats", "category-sales"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "Products",
       "item": [
         {
