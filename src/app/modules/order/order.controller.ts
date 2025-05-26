@@ -28,7 +28,11 @@ const GetOrderById = catchAsync(async (req, res) => {
 });
 
 const CreateOrder = catchAsync(async (req, res) => {
-  const result = await OrderService.CreateOrder(req.body, req.user.id);
+  const result = await OrderService.CreateOrder(
+    req.body,
+    req.user.id,
+    req.user,
+  );
 
   sendResponse(res, {
     success: true,

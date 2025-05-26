@@ -28,14 +28,16 @@ const AppError_1 = __importDefault(require("../../errors/AppError"));
 const prisma_1 = __importDefault(require("../../utils/prisma"));
 const handelFile_1 = require("../../utils/handelFile");
 const pagination_1 = __importDefault(require("../../utils/pagination"));
-const GetProducts = (query) => __awaiter(void 0, void 0, void 0, function* () {
+const GetProducts = (query, userShopId) => __awaiter(void 0, void 0, void 0, function* () {
     const { search, category_id, availability } = query, paginationOptions = __rest(query, ["search", "category_id", "availability"]);
-    // Calculate pagination with your utility
     const { page, limit, skip, sort_by, sort_order } = (0, pagination_1.default)(paginationOptions);
-    // Build where clause for optimized filtering
     const whereClause = {
         is_deleted: false,
     };
+    // Add shop scoping for non-super-admin users
+    if (userShopId) {
+        whereClause.shop_id = userShopId;
+    }
     // Add search filter (searches in product name)
     if (search) {
         whereClause.name = {
@@ -74,6 +76,13 @@ const GetProducts = (query) => __awaiter(void 0, void 0, void 0, function* () {
                         image: true,
                     },
                 },
+                shop: {
+                    select: {
+                        id: true,
+                        name: true,
+                        type: true,
+                    },
+                },
             },
             orderBy,
             skip,
@@ -91,17 +100,18 @@ const GetProducts = (query) => __awaiter(void 0, void 0, void 0, function* () {
     };
     return { products, meta };
 });
-const CreateProduct = (payload, file) => __awaiter(void 0, void 0, void 0, function* () {
+const CreateProduct = (payload, shopId, file) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
-    // Verify category exists and is not deleted
+    // Verify category exists, is not deleted, and belongs to the same shop
     const category = yield prisma_1.default.category.findFirst({
         where: {
             id: payload.category_id,
+            shop_id: shopId,
             is_deleted: false,
         },
     });
     if (!category) {
-        throw new AppError_1.default(http_status_1.default.NOT_FOUND, 'Category not found or has been deleted');
+        throw new AppError_1.default(http_status_1.default.NOT_FOUND, 'Category not found or does not belong to your shop');
     }
     let imageUrl;
     // Upload image to Cloudinary if file is provided
@@ -124,6 +134,7 @@ const CreateProduct = (payload, file) => __awaiter(void 0, void 0, void 0, funct
             price: payload.price,
             image: imageUrl,
             category_id: payload.category_id,
+            shop_id: shopId,
             is_available: (_a = payload.is_available) !== null && _a !== void 0 ? _a : true,
         },
         include: {
@@ -132,6 +143,13 @@ const CreateProduct = (payload, file) => __awaiter(void 0, void 0, void 0, funct
                     id: true,
                     name: true,
                     image: true,
+                },
+            },
+            shop: {
+                select: {
+                    id: true,
+                    name: true,
+                    type: true,
                 },
             },
         },

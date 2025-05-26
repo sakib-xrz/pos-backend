@@ -7,7 +7,7 @@ const GetSetting = async () => {
   const setting = await prisma.setting.findFirst({
     select: {
       id: true,
-      restaurant_name: true,
+      display_name: true,
       address: true,
       phone_number: true,
       email: true,
@@ -31,7 +31,7 @@ const GetSetting = async () => {
 };
 
 const UpdateSetting = async (payload: {
-  restaurant_name?: string;
+  display_name?: string;
   address?: string;
   phone_number?: string;
   email?: string;
@@ -39,6 +39,7 @@ const UpdateSetting = async (payload: {
   receipt_header_text?: string;
   receipt_footer_text?: string;
   show_logo_on_receipt?: boolean;
+  shop_id: string;
 }) => {
   // Check if any setting exists
   const existingSetting = await prisma.setting.findFirst();
@@ -46,7 +47,7 @@ const UpdateSetting = async (payload: {
   if (!existingSetting) {
     // If no setting exists, create a new one with required fields
     const defaultSetting = {
-      restaurant_name: payload.restaurant_name || 'My Restaurant',
+      display_name: payload.display_name || 'My Restaurant',
       address: payload.address || 'Address not set',
       phone_number: payload.phone_number || '000-000-0000',
       email: payload.email || 'contact@restaurant.com',
@@ -56,13 +57,14 @@ const UpdateSetting = async (payload: {
       receipt_footer_text:
         payload.receipt_footer_text || 'Thank you for your visit!',
       show_logo_on_receipt: payload.show_logo_on_receipt ?? true,
+      shop_id: payload.shop_id,
     };
 
     const newSetting = await prisma.setting.create({
       data: defaultSetting,
       select: {
         id: true,
-        restaurant_name: true,
+        display_name: true,
         address: true,
         phone_number: true,
         email: true,
@@ -87,7 +89,7 @@ const UpdateSetting = async (payload: {
     },
     select: {
       id: true,
-      restaurant_name: true,
+      display_name: true,
       address: true,
       phone_number: true,
       email: true,

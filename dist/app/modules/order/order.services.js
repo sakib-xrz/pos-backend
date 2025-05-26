@@ -155,7 +155,7 @@ const GetOrderById = (id) => __awaiter(void 0, void 0, void 0, function* () {
     }
     return order;
 });
-const CreateOrder = (payload, userId) => __awaiter(void 0, void 0, void 0, function* () {
+const CreateOrder = (payload, userId, user) => __awaiter(void 0, void 0, void 0, function* () {
     // Validate all products exist and are available
     const productIds = payload.order_items.map((item) => item.product_id);
     const products = yield prisma_1.default.product.findMany({
@@ -190,9 +190,9 @@ const CreateOrder = (payload, userId) => __awaiter(void 0, void 0, void 0, funct
                 total_amount: totalAmount,
                 status: client_1.OrderStatus.OPEN,
                 payment_type: payload.payment_type,
-                table_number: payload.table_number,
                 note: payload.note,
                 created_by: userId,
+                shop_id: user.shop_id,
             },
         });
         // Create order items

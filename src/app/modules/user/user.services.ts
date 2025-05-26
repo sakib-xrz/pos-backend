@@ -26,7 +26,7 @@ interface UpdateUserPayload {
   role?: Role;
 }
 
-const GetUsers = async (query: GetUsersQuery) => {
+const GetUsers = async (query: GetUsersQuery, userShopId?: string) => {
   const { search, role, ...paginationOptions } = query;
 
   // Calculate pagination with your utility
@@ -37,6 +37,16 @@ const GetUsers = async (query: GetUsersQuery) => {
   const whereClause: Prisma.UserWhereInput = {
     is_deleted: false,
   };
+
+  // Add shop scoping for non-super-admin users
+  if (userShopId) {
+    whereClause.shop_id = userShopId;
+  }
+
+  // Exclude super admin users from shop admin view
+  if (userShopId) {
+    whereClause.role = { not: 'SUPER_ADMIN' };
+  }
 
   // Add search filter (searches in name and email)
   if (search) {
@@ -119,7 +129,17 @@ const GetUsers = async (query: GetUsersQuery) => {
   return { users: usersWithCounts, meta };
 };
 
-const CreateUser = async (payload: CreateUserPayload) => {
+const CreateUser = async (
+  payload: CreateUserPayload & { shop_id?: string },
+) => {
+  // Prevent creation of SUPER_ADMIN by non-super-admin users
+  if (payload.role === 'SUPER_ADMIN' && payload.shop_id) {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      'Cannot create super admin user in shop context',
+    );
+  }
+
   // Check if user with same email already exists
   const existingUser = await prisma.user.findFirst({
     where: {
@@ -150,6 +170,7 @@ const CreateUser = async (payload: CreateUserPayload) => {
       email: payload.email,
       password: hashedPassword,
       role: payload.role,
+      shop_id: payload.shop_id,
     },
     select: {
       id: true,
@@ -158,6 +179,13 @@ const CreateUser = async (payload: CreateUserPayload) => {
       role: true,
       created_at: true,
       updated_at: true,
+      shop: {
+        select: {
+          id: true,
+          name: true,
+          type: true,
+        },
+      },
     },
   });
 

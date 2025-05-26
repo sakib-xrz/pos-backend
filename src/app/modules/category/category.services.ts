@@ -10,7 +10,7 @@ import {
 import calculatePagination, {
   IPaginationOptions,
 } from '../../utils/pagination';
-
+import { JwtPayload } from 'jsonwebtoken';
 interface GetCategoriesQuery extends IPaginationOptions {
   search?: string;
 }
@@ -99,6 +99,7 @@ const GetCategories = async (query: GetCategoriesQuery) => {
 
 const CreateCategory = async (
   payload: CreateCategoryPayload,
+  user: JwtPayload,
   file?: Express.Multer.File,
 ) => {
   // Check if category with same name already exists
@@ -145,6 +146,7 @@ const CreateCategory = async (
     data: {
       name: payload.name,
       image: imageUrl,
+      shop_id: user.shop_id,
     },
     include: {
       _count: {

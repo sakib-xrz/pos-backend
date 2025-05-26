@@ -16,6 +16,7 @@ const http_status_1 = __importDefault(require("http-status"));
 const catchAsync_1 = __importDefault(require("../../utils/catchAsync"));
 const sendResponse_1 = __importDefault(require("../../utils/sendResponse"));
 const category_services_1 = __importDefault(require("./category.services"));
+const AppError_1 = __importDefault(require("../../errors/AppError"));
 const GetCategories = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield category_services_1.default.GetCategories(req.query);
     (0, sendResponse_1.default)(res, {
@@ -27,7 +28,11 @@ const GetCategories = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, 
     });
 }));
 const CreateCategory = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield category_services_1.default.CreateCategory(req.body, req.file);
+    if (req.user.role === 'SUPER_ADMIN') {
+        throw new AppError_1.default(http_status_1.default.FORBIDDEN, 'Super admin cannot create categories');
+    }
+    const user = req.user;
+    const result = yield category_services_1.default.CreateCategory(req.body, user, req.file);
     (0, sendResponse_1.default)(res, {
         success: true,
         statusCode: http_status_1.default.CREATED,

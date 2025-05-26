@@ -5,10 +5,14 @@ import ProductService, {
   CreateProductPayload,
   GetProductsQuery,
 } from './product.services';
+import AppError from '../../errors/AppError';
 
 const GetProducts = catchAsync(async (req, res) => {
+  const userShopId =
+    req.user.role === 'SUPER_ADMIN' ? undefined : req.user.shop_id;
   const result = await ProductService.GetProducts(
     req.query as GetProductsQuery,
+    userShopId,
   );
 
   sendResponse(res, {
@@ -21,8 +25,16 @@ const GetProducts = catchAsync(async (req, res) => {
 });
 
 const CreateProduct = catchAsync(async (req, res) => {
+  if (req.user.role === 'SUPER_ADMIN') {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      'Super admin cannot create products',
+    );
+  }
+
   const result = await ProductService.CreateProduct(
     req.body as CreateProductPayload,
+    req.user.shop_id!,
     req.file,
   );
 

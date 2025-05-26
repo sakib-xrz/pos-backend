@@ -6,6 +6,7 @@ import { UserRoutes } from '../modules/user/user.routes';
 import { OrderRoutes } from '../modules/order/order.routes';
 import { SettingRoutes } from '../modules/setting/setting.routes';
 import { StatsRoutes } from '../modules/stats/stats.routes';
+import { ShopRoutes } from '../modules/shop/shop.routes';
 
 const router = express.Router();
 
@@ -13,6 +14,7 @@ type Route = { path: string; route: express.Router };
 
 const routes: Route[] = [
   { path: '/auth', route: AuthRoutes },
+  { path: '/shops', route: ShopRoutes },
   { path: '/products', route: ProductRoutes },
   { path: '/categories', route: CategoryRoutes },
   { path: '/users', route: UserRoutes },

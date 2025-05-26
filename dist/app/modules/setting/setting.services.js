@@ -20,7 +20,7 @@ const GetSetting = () => __awaiter(void 0, void 0, void 0, function* () {
     const setting = yield prisma_1.default.setting.findFirst({
         select: {
             id: true,
-            restaurant_name: true,
+            display_name: true,
             address: true,
             phone_number: true,
             email: true,
@@ -44,7 +44,7 @@ const UpdateSetting = (payload) => __awaiter(void 0, void 0, void 0, function* (
     if (!existingSetting) {
         // If no setting exists, create a new one with required fields
         const defaultSetting = {
-            restaurant_name: payload.restaurant_name || 'My Restaurant',
+            display_name: payload.display_name || 'My Restaurant',
             address: payload.address || 'Address not set',
             phone_number: payload.phone_number || '000-000-0000',
             email: payload.email || 'contact@restaurant.com',
@@ -52,12 +52,13 @@ const UpdateSetting = (payload) => __awaiter(void 0, void 0, void 0, function* (
             receipt_header_text: payload.receipt_header_text || 'Welcome to our restaurant!',
             receipt_footer_text: payload.receipt_footer_text || 'Thank you for your visit!',
             show_logo_on_receipt: (_a = payload.show_logo_on_receipt) !== null && _a !== void 0 ? _a : true,
+            shop_id: payload.shop_id,
         };
         const newSetting = yield prisma_1.default.setting.create({
             data: defaultSetting,
             select: {
                 id: true,
-                restaurant_name: true,
+                display_name: true,
                 address: true,
                 phone_number: true,
                 email: true,
@@ -77,7 +78,7 @@ const UpdateSetting = (payload) => __awaiter(void 0, void 0, void 0, function* (
         data: Object.assign(Object.assign({}, payload), { updated_at: new Date() }),
         select: {
             id: true,
-            restaurant_name: true,
+            display_name: true,
             address: true,
             phone_number: true,
             email: true,

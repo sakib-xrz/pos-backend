@@ -21,11 +21,28 @@ const config_1 = __importDefault(require("../../config"));
 const Login = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     const user = yield prisma_1.default.user.findFirst({
         where: { email: payload.email },
+        include: {
+            shop: true,
+        },
     });
     if (!user) {
         throw new AppError_1.default(http_status_1.default.NOT_FOUND, 'No user found with this email');
     }
-    const isPasswordMatched = yield yield bcrypt_1.default.compare(payload.password, user.password);
+    // Check subscription for non-super-admin users
+    if (user.role !== 'SUPER_ADMIN') {
+        if (!user.shop) {
+            throw new AppError_1.default(http_status_1.default.FORBIDDEN, 'User is not associated with any shop');
+        }
+        if (!user.shop.is_active) {
+            throw new AppError_1.default(http_status_1.default.FORBIDDEN, 'Shop is deactivated');
+        }
+        const now = new Date();
+        const subscriptionEnd = new Date(user.shop.subscription_end);
+        if (subscriptionEnd <= now) {
+            throw new AppError_1.default(http_status_1.default.FORBIDDEN, 'Shop subscription has expired. Please contact support.');
+        }
+    }
+    const isPasswordMatched = yield bcrypt_1.default.compare(payload.password, user.password);
     if (!isPasswordMatched) {
         throw new AppError_1.default(http_status_1.default.UNAUTHORIZED, 'Invalid email or password');
     }
@@ -33,10 +50,11 @@ const Login = (payload) => __awaiter(void 0, void 0, void 0, function* () {
         id: user.id,
         email: user.email,
         role: user.role,
+        shop_id: user.shop_id,
     };
     const access_token = auth_utils_1.default.CreateToken(jwtPayload, config_1.default.jwt_access_token_secret, config_1.default.jwt_access_token_expires_in);
     const refresh_token = auth_utils_1.default.CreateToken(jwtPayload, config_1.default.jwt_refresh_token_secret, config_1.default.jwt_refresh_token_expires_in);
-    return { access_token, refresh_token };
+    return { access_token, refresh_token, user: Object.assign(Object.assign({}, user), { shop: undefined }) };
 });
 const ChangePassword = (payload, user) => __awaiter(void 0, void 0, void 0, function* () {
     const isUserValid = yield prisma_1.default.user.findFirst({
@@ -64,12 +82,36 @@ const GetMyProfile = (user) => __awaiter(void 0, void 0, void 0, function* () {
             name: true,
             role: true,
             created_at: true,
+            shop: {
+                select: {
+                    id: true,
+                    name: true,
+                    type: true,
+                    subscription_plan: true,
+                    subscription_end: true,
+                    is_active: true,
+                },
+            },
         },
     });
     if (!userProfile) {
         throw new AppError_1.default(http_status_1.default.NOT_FOUND, 'User not found');
     }
-    return userProfile;
+    // Add subscription status
+    let subscriptionStatus = 'active';
+    if (userProfile.shop) {
+        const now = new Date();
+        const subscriptionEnd = new Date(userProfile.shop.subscription_end);
+        const isExpired = subscriptionEnd <= now;
+        const isExpiringSoon = !isExpired &&
+            subscriptionEnd <= new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+        subscriptionStatus = isExpired
+            ? 'expired'
+            : isExpiringSoon
+                ? 'expiring_soon'
+                : 'active';
+    }
+    return Object.assign(Object.assign({}, userProfile), { subscription_status: subscriptionStatus });
 });
 const AuthService = {
     Login,

@@ -8,6 +8,7 @@ datasource db {
 }
 
 enum Role {
+  SUPER_ADMIN
   ADMIN
   STAFF
 }
@@ -28,30 +29,72 @@ enum CouponType {
   FIXED
 }
 
+enum ShopType {
+  RESTAURANT
+  PHARMACY
+}
+
+enum SubscriptionPlan {
+  ONE_MONTH
+  SIX_MONTHS
+  ONE_YEAR
+}
+
+model Shop {
+  id                 String           @id @default(uuid())
+  name               String
+  branch_name        String?
+  type               ShopType
+  subscription_plan  SubscriptionPlan
+  subscription_start DateTime         @default(now())
+  subscription_end   DateTime
+  is_active          Boolean          @default(true)
+  created_at         DateTime         @default(now())
+  updated_at         DateTime         @updatedAt
+
+  // relations
+  users      User[]     @relation("ShopUsers")
+  settings   Setting?
+  categories Category[]
+  products   Product[]
+  orders     Order[]
+  receipts   Receipt[]
+
+  @@map("shop")
+}
+
 model User {
-  id         String    @id @default(uuid())
+  id         String   @id @default(uuid())
   name       String
-  email      String    @unique
+  email      String   @unique
   password   String
   role       Role
-  is_deleted Boolean   @default(false)
-  orders     Order[]   @relation("UserOrders")
-  receipts   Receipt[] @relation("PrintedByUser")
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
+  shop_id    String?
+  is_deleted Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // relations
+  shop     Shop?     @relation("ShopUsers", fields: [shop_id], references: [id], onDelete: Cascade)
+  orders   Order[]   @relation("UserOrders")
+  receipts Receipt[] @relation("PrintedByUser")
 
   @@index([is_deleted])
   @@map("user")
 }
 
 model Category {
-  id         String    @id @default(uuid())
+  id         String   @id @default(uuid())
   name       String
   image      String?
-  is_deleted Boolean   @default(false)
-  products   Product[]
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
+  shop_id    String
+  is_deleted Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // relations
+  shop     Shop      @relation(fields: [shop_id], references: [id], onDelete: Cascade)
+  products Product[]
 
   @@index([name])
   @@index([is_deleted])
@@ -59,21 +102,24 @@ model Category {
 }
 
 model Product {
-  id           String      @id @default(uuid())
+  id           String   @id @default(uuid())
   name         String
   price        Decimal
   image        String?
-  is_available Boolean     @default(true)
-  is_deleted   Boolean     @default(false)
   category_id  String
-  category     Category    @relation(fields: [category_id], references: [id], onDelete: Restrict)
-  order_items  OrderItem[]
-  created_at   DateTime    @default(now())
-  updated_at   DateTime    @updatedAt
+  shop_id      String
+  is_available Boolean  @default(true)
+  is_deleted   Boolean  @default(false)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  // relations
+  category    Category    @relation(fields: [category_id], references: [id], onDelete: Restrict)
+  shop        Shop        @relation(fields: [shop_id], references: [id], onDelete: Cascade)
+  order_items OrderItem[]
 
   @@index([category_id])
   @@index([is_available])
-  @@index([category_id, is_available])
   @@index([is_deleted])
   @@map("product")
 }
@@ -86,16 +132,19 @@ model Order {
   payment_type PaymentType
   note         String?
   created_by   String
-  user         User        @relation("UserOrders", fields: [created_by], references: [id], onDelete: Restrict)
-  order_items  OrderItem[]
-  receipt      Receipt?
+  shop_id      String
   created_at   DateTime    @default(now())
   updated_at   DateTime    @updatedAt
+
+  // relations
+  user        User        @relation("UserOrders", fields: [created_by], references: [id], onDelete: Restrict)
+  shop        Shop        @relation(fields: [shop_id], references: [id], onDelete: Cascade)
+  order_items OrderItem[]
+  receipt     Receipt?
 
   @@index([created_by])
   @@index([status])
   @@index([created_at])
-  @@index([created_by, status])
   @@map("order")
 }
 
@@ -105,8 +154,10 @@ model OrderItem {
   product_id String
   quantity   Int
   price      Decimal
-  order      Order   @relation(fields: [order_id], references: [id], onDelete: Cascade)
-  product    Product @relation(fields: [product_id], references: [id], onDelete: Restrict)
+
+  // relations
+  order   Order   @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [product_id], references: [id], onDelete: Restrict)
 
   @@index([order_id])
   @@index([product_id])
@@ -116,10 +167,14 @@ model OrderItem {
 model Receipt {
   id         String   @id @default(uuid())
   order_id   String   @unique
-  printed_at DateTime @default(now())
   printed_by String?
-  order      Order    @relation(fields: [order_id], references: [id], onDelete: Cascade)
-  user       User?    @relation("PrintedByUser", fields: [printed_by], references: [id], onDelete: SetNull)
+  shop_id    String
+  printed_at DateTime @default(now())
+
+  // relations
+  order Order @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  user  User? @relation("PrintedByUser", fields: [printed_by], references: [id], onDelete: SetNull)
+  shop  Shop  @relation(fields: [shop_id], references: [id], onDelete: Cascade)
 
   @@index([printed_by])
   @@index([printed_at])
@@ -128,7 +183,8 @@ model Receipt {
 
 model Setting {
   id                   String   @id @default(uuid())
-  restaurant_name      String
+  shop_id              String   @unique
+  display_name         String
   address              String
   phone_number         String
   email                String
@@ -138,6 +194,9 @@ model Setting {
   show_logo_on_receipt Boolean  @default(true)
   created_at           DateTime @default(now())
   updated_at           DateTime @updatedAt
+
+  // relations
+  shop Shop @relation(fields: [shop_id], references: [id], onDelete: Cascade)
 
   @@map("setting")
 }

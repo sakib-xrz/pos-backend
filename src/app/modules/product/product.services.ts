@@ -32,17 +32,20 @@ export interface UpdateProductPayload {
   is_available?: boolean;
 }
 
-const GetProducts = async (query: GetProductsQuery) => {
+const GetProducts = async (query: GetProductsQuery, userShopId?: string) => {
   const { search, category_id, availability, ...paginationOptions } = query;
 
-  // Calculate pagination with your utility
   const { page, limit, skip, sort_by, sort_order } =
     calculatePagination(paginationOptions);
 
-  // Build where clause for optimized filtering
   const whereClause: Prisma.ProductWhereInput = {
     is_deleted: false,
   };
+
+  // Add shop scoping for non-super-admin users
+  if (userShopId) {
+    whereClause.shop_id = userShopId;
+  }
 
   // Add search filter (searches in product name)
   if (search) {
@@ -91,6 +94,13 @@ const GetProducts = async (query: GetProductsQuery) => {
             image: true,
           },
         },
+        shop: {
+          select: {
+            id: true,
+            name: true,
+            type: true,
+          },
+        },
       },
       orderBy,
       skip,
@@ -113,12 +123,14 @@ const GetProducts = async (query: GetProductsQuery) => {
 
 const CreateProduct = async (
   payload: CreateProductPayload,
+  shopId: string,
   file?: Express.Multer.File,
 ) => {
-  // Verify category exists and is not deleted
+  // Verify category exists, is not deleted, and belongs to the same shop
   const category = await prisma.category.findFirst({
     where: {
       id: payload.category_id,
+      shop_id: shopId,
       is_deleted: false,
     },
   });
@@ -126,7 +138,7 @@ const CreateProduct = async (
   if (!category) {
     throw new AppError(
       httpStatus.NOT_FOUND,
-      'Category not found or has been deleted',
+      'Category not found or does not belong to your shop',
     );
   }
 
@@ -155,6 +167,7 @@ const CreateProduct = async (
       price: payload.price,
       image: imageUrl,
       category_id: payload.category_id,
+      shop_id: shopId,
       is_available: payload.is_available ?? true,
     },
     include: {
@@ -163,6 +176,13 @@ const CreateProduct = async (
           id: true,
           name: true,
           image: true,
+        },
+      },
+      shop: {
+        select: {
+          id: true,
+          name: true,
+          type: true,
         },
       },
     },

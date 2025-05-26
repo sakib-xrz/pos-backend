@@ -29,7 +29,7 @@ const AppError_1 = __importDefault(require("../../errors/AppError"));
 const prisma_1 = __importDefault(require("../../utils/prisma"));
 const pagination_1 = __importDefault(require("../../utils/pagination"));
 const config_1 = __importDefault(require("../../config"));
-const GetUsers = (query) => __awaiter(void 0, void 0, void 0, function* () {
+const GetUsers = (query, userShopId) => __awaiter(void 0, void 0, void 0, function* () {
     const { search, role } = query, paginationOptions = __rest(query, ["search", "role"]);
     // Calculate pagination with your utility
     const { page, limit, skip, sort_by, sort_order } = (0, pagination_1.default)(paginationOptions);
@@ -37,6 +37,14 @@ const GetUsers = (query) => __awaiter(void 0, void 0, void 0, function* () {
     const whereClause = {
         is_deleted: false,
     };
+    // Add shop scoping for non-super-admin users
+    if (userShopId) {
+        whereClause.shop_id = userShopId;
+    }
+    // Exclude super admin users from shop admin view
+    if (userShopId) {
+        whereClause.role = { not: 'SUPER_ADMIN' };
+    }
     // Add search filter (searches in name and email)
     if (search) {
         whereClause.OR = [
@@ -106,6 +114,10 @@ const GetUsers = (query) => __awaiter(void 0, void 0, void 0, function* () {
     return { users: usersWithCounts, meta };
 });
 const CreateUser = (payload) => __awaiter(void 0, void 0, void 0, function* () {
+    // Prevent creation of SUPER_ADMIN by non-super-admin users
+    if (payload.role === 'SUPER_ADMIN' && payload.shop_id) {
+        throw new AppError_1.default(http_status_1.default.FORBIDDEN, 'Cannot create super admin user in shop context');
+    }
     // Check if user with same email already exists
     const existingUser = yield prisma_1.default.user.findFirst({
         where: {
@@ -127,6 +139,7 @@ const CreateUser = (payload) => __awaiter(void 0, void 0, void 0, function* () {
             email: payload.email,
             password: hashedPassword,
             role: payload.role,
+            shop_id: payload.shop_id,
         },
         select: {
             id: true,
@@ -135,6 +148,13 @@ const CreateUser = (payload) => __awaiter(void 0, void 0, void 0, function* () {
             role: true,
             created_at: true,
             updated_at: true,
+            shop: {
+                select: {
+                    id: true,
+                    name: true,
+                    type: true,
+                },
+            },
         },
     });
     return user;

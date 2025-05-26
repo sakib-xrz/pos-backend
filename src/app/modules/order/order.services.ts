@@ -6,6 +6,7 @@ import prisma from '../../utils/prisma';
 import calculatePagination, {
   IPaginationOptions,
 } from '../../utils/pagination';
+import { JwtPayload } from 'jsonwebtoken';
 
 interface GetOrdersQuery extends IPaginationOptions {
   status?: OrderStatus;
@@ -174,7 +175,11 @@ const GetOrderById = async (id: string) => {
   return order;
 };
 
-const CreateOrder = async (payload: CreateOrderPayload, userId: string) => {
+const CreateOrder = async (
+  payload: CreateOrderPayload,
+  userId: string,
+  user: JwtPayload,
+) => {
   // Validate all products exist and are available
   const productIds = payload.order_items.map((item) => item.product_id);
   const products = await prisma.product.findMany({
@@ -220,9 +225,9 @@ const CreateOrder = async (payload: CreateOrderPayload, userId: string) => {
         total_amount: totalAmount,
         status: OrderStatus.OPEN,
         payment_type: payload.payment_type,
-        table_number: payload.table_number,
         note: payload.note,
         created_by: userId,
+        shop_id: user.shop_id,
       },
     });
 

@@ -37,6 +37,9 @@ const auth = (...roles: Role[]) => {
 
       const user = await prisma.user.findUnique({
         where: { email, is_deleted: false },
+        include: {
+          shop: true,
+        },
       });
 
       if (!user) {
@@ -44,6 +47,35 @@ const auth = (...roles: Role[]) => {
           httpStatus.UNAUTHORIZED,
           "You're not authorized to access this route",
         );
+      }
+
+      // Check subscription status for non-super-admin users
+      if (user.role !== 'SUPER_ADMIN') {
+        if (!user.shop) {
+          throw new AppError(
+            httpStatus.FORBIDDEN,
+            'User is not associated with any shop',
+          );
+        }
+
+        // Check if shop is active
+        if (!user.shop.is_active) {
+          throw new AppError(
+            httpStatus.FORBIDDEN,
+            'Shop is deactivated. Please contact support.',
+          );
+        }
+
+        // Check subscription expiry
+        const now = new Date();
+        const subscriptionEnd = new Date(user.shop.subscription_end);
+
+        if (subscriptionEnd <= now) {
+          throw new AppError(
+            httpStatus.FORBIDDEN,
+            'Shop subscription has expired. Please contact support to renew.',
+          );
+        }
       }
 
       if (roles.length && !roles.includes(user.role)) {

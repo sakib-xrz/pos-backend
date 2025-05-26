@@ -3,12 +3,17 @@ import { z } from 'zod';
 const UpdateSettingSchema = z.object({
   body: z
     .object({
-      restaurant_name: z
+      display_name: z
         .string({
-          invalid_type_error: 'Restaurant name must be a string',
+          invalid_type_error: 'Display name must be a string',
         })
-        .min(1, 'Restaurant name cannot be empty')
-        .max(100, 'Restaurant name cannot exceed 100 characters')
+        .min(1, 'Display name cannot be empty')
+        .max(100, 'Display name cannot exceed 100 characters')
+        .optional(),
+      shop_id: z
+        .string({
+          invalid_type_error: 'Shop ID must be a string',
+        })
         .optional(),
       address: z
         .string({

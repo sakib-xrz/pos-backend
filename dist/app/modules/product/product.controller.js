@@ -16,8 +16,10 @@ const http_status_1 = __importDefault(require("http-status"));
 const catchAsync_1 = __importDefault(require("../../utils/catchAsync"));
 const sendResponse_1 = __importDefault(require("../../utils/sendResponse"));
 const product_services_1 = __importDefault(require("./product.services"));
+const AppError_1 = __importDefault(require("../../errors/AppError"));
 const GetProducts = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield product_services_1.default.GetProducts(req.query);
+    const userShopId = req.user.role === 'SUPER_ADMIN' ? undefined : req.user.shop_id;
+    const result = yield product_services_1.default.GetProducts(req.query, userShopId);
     (0, sendResponse_1.default)(res, {
         success: true,
         statusCode: http_status_1.default.OK,
@@ -27,7 +29,10 @@ const GetProducts = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, vo
     });
 }));
 const CreateProduct = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield product_services_1.default.CreateProduct(req.body, req.file);
+    if (req.user.role === 'SUPER_ADMIN') {
+        throw new AppError_1.default(http_status_1.default.FORBIDDEN, 'Super admin cannot create products');
+    }
+    const result = yield product_services_1.default.CreateProduct(req.body, req.user.shop_id, req.file);
     (0, sendResponse_1.default)(res, {
         success: true,
         statusCode: http_status_1.default.CREATED,

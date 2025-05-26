@@ -32,9 +32,28 @@ const auth = (...roles) => {
         const { email } = decoded;
         const user = yield prisma_1.default.user.findUnique({
             where: { email, is_deleted: false },
+            include: {
+                shop: true,
+            },
         });
         if (!user) {
             throw new AppError_1.default(http_status_1.default.UNAUTHORIZED, "You're not authorized to access this route");
+        }
+        // Check subscription status for non-super-admin users
+        if (user.role !== 'SUPER_ADMIN') {
+            if (!user.shop) {
+                throw new AppError_1.default(http_status_1.default.FORBIDDEN, 'User is not associated with any shop');
+            }
+            // Check if shop is active
+            if (!user.shop.is_active) {
+                throw new AppError_1.default(http_status_1.default.FORBIDDEN, 'Shop is deactivated. Please contact support.');
+            }
+            // Check subscription expiry
+            const now = new Date();
+            const subscriptionEnd = new Date(user.shop.subscription_end);
+            if (subscriptionEnd <= now) {
+                throw new AppError_1.default(http_status_1.default.FORBIDDEN, 'Shop subscription has expired. Please contact support to renew.');
+            }
         }
         if (roles.length && !roles.includes(user.role)) {
             throw new AppError_1.default(http_status_1.default.FORBIDDEN, "You don't have permission to access this route");

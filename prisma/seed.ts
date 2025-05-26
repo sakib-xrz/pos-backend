@@ -11,32 +11,19 @@ async function main() {
 
   // Create admin user
   await prisma.user.upsert({
-    where: { email: 'admin@pos.com' },
+    where: { email: 'superadmin@pos.com' },
     update: {},
     create: {
       name: 'System Administrator',
-      email: 'admin@pos.com',
+      email: 'superadmin@pos.com',
       password: hashedPassword,
-      role: 'ADMIN',
-    },
-  });
-
-  // Create a staff user for testing
-  await prisma.user.upsert({
-    where: { email: 'staff@pos.com' },
-    update: {},
-    create: {
-      name: 'Staff Member',
-      email: 'staff@pos.com',
-      password: hashedPassword, // same password for testing
-      role: 'STAFF',
+      role: 'SUPER_ADMIN',
     },
   });
 
   console.log('🎉 Seed completed successfully!');
   console.log('\n📝 Login Credentials:');
-  console.log('Admin - Email: admin@pos.com, Password: 123456');
-  console.log('Staff - Email: staff@pos.com, Password: 123456');
+  console.log('Super Admin - Email: superadmin@pos.com, Password: 123456');
 }
 
 main()

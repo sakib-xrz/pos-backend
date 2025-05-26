@@ -87,7 +87,7 @@ const GetCategories = (query) => __awaiter(void 0, void 0, void 0, function* () 
     };
     return { categories: categoriesWithCount, meta };
 });
-const CreateCategory = (payload, file) => __awaiter(void 0, void 0, void 0, function* () {
+const CreateCategory = (payload, user, file) => __awaiter(void 0, void 0, void 0, function* () {
     // Check if category with same name already exists
     const existingCategory = yield prisma_1.default.category.findFirst({
         where: {
@@ -120,6 +120,7 @@ const CreateCategory = (payload, file) => __awaiter(void 0, void 0, void 0, func
         data: {
             name: payload.name,
             image: imageUrl,
+            shop_id: user.shop_id,
         },
         include: {
             _count: {

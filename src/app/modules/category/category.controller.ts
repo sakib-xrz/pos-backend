@@ -2,6 +2,7 @@ import httpStatus from 'http-status';
 import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
 import CategoryService from './category.services';
+import AppError from '../../errors/AppError';
 
 const GetCategories = catchAsync(async (req, res) => {
   const result = await CategoryService.GetCategories(req.query);
@@ -16,7 +17,16 @@ const GetCategories = catchAsync(async (req, res) => {
 });
 
 const CreateCategory = catchAsync(async (req, res) => {
-  const result = await CategoryService.CreateCategory(req.body, req.file);
+  if (req.user.role === 'SUPER_ADMIN') {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      'Super admin cannot create categories',
+    );
+  }
+
+  const user = req.user;
+
+  const result = await CategoryService.CreateCategory(req.body, user, req.file);
 
   sendResponse(res, {
     success: true,

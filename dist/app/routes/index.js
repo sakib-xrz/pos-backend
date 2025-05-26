@@ -11,9 +11,11 @@ const user_routes_1 = require("../modules/user/user.routes");
 const order_routes_1 = require("../modules/order/order.routes");
 const setting_routes_1 = require("../modules/setting/setting.routes");
 const stats_routes_1 = require("../modules/stats/stats.routes");
+const shop_routes_1 = require("../modules/shop/shop.routes");
 const router = express_1.default.Router();
 const routes = [
     { path: '/auth', route: auth_routes_1.AuthRoutes },
+    { path: '/shops', route: shop_routes_1.ShopRoutes },
     { path: '/products', route: product_routes_1.ProductRoutes },
     { path: '/categories', route: category_routes_1.CategoryRoutes },
     { path: '/users', route: user_routes_1.UserRoutes },
