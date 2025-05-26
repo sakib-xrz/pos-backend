@@ -12,6 +12,21 @@ const CreateShopSchema = zod_1.z.object({
         admin_name: zod_1.z.string().min(1, 'Admin name is required'),
         admin_email: zod_1.z.string().email('Invalid email format'),
         admin_password: zod_1.z.string().min(6, 'Password must be at least 6 characters'),
+        settings: zod_1.z
+            .object({
+            display_name: zod_1.z.string().min(1).max(100).optional(),
+            address: zod_1.z.string().max(500).optional(),
+            phone_number: zod_1.z
+                .string()
+                .regex(/^[+]?[1-9][\d]{0,15}$/)
+                .optional(),
+            email: zod_1.z.string().email().optional(),
+            logo_url: zod_1.z.string().url().optional(),
+            receipt_header_text: zod_1.z.string().max(200).optional(),
+            receipt_footer_text: zod_1.z.string().max(200).optional(),
+            show_logo_on_receipt: zod_1.z.boolean().optional(),
+        })
+            .optional(),
     }),
 });
 const UpdateShopSchema = zod_1.z.object({
