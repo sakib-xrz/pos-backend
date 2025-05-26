@@ -51,7 +51,7 @@ const GetShops = (query) => __awaiter(void 0, void 0, void 0, function* () {
     }
     // Active status filter
     if (is_active !== undefined) {
-        whereClause.is_active = is_active;
+        whereClause.is_active = is_active === 'true' ? true : false;
     }
     const orderBy = [];
     const sortField = sort_by;

@@ -12,7 +12,7 @@ export interface GetShopsQuery extends IPaginationOptions {
   search?: string;
   type?: ShopType;
   subscription_plan?: SubscriptionPlan;
-  is_active?: boolean;
+  is_active?: boolean | string; // Allow string for query params
   subscription_status?: 'active' | 'expired' | 'expiring_soon';
 }
 
@@ -72,7 +72,7 @@ const GetShops = async (query: GetShopsQuery) => {
 
   // Active status filter
   if (is_active !== undefined) {
-    whereClause.is_active = is_active;
+    whereClause.is_active = is_active === 'true' ? true : false;
   }
 
   const orderBy: Prisma.ShopOrderByWithRelationInput[] = [];
