@@ -44,14 +44,8 @@ export interface UpdateShopPayload {
 }
 
 const GetShops = async (query: GetShopsQuery) => {
-  const {
-    search,
-    type,
-    subscription_plan,
-    is_active,
-    subscription_status,
-    ...paginationOptions
-  } = query;
+  const { search, type, subscription_plan, is_active, ...paginationOptions } =
+    query;
 
   const { page, limit, skip, sort_by, sort_order } =
     calculatePagination(paginationOptions);
@@ -79,28 +73,6 @@ const GetShops = async (query: GetShopsQuery) => {
   // Active status filter
   if (is_active !== undefined) {
     whereClause.is_active = is_active;
-  }
-
-  // Subscription status filter
-  if (subscription_status) {
-    const now = new Date();
-    const sevenDaysFromNow = new Date();
-    sevenDaysFromNow.setDate(now.getDate() + 7);
-
-    switch (subscription_status) {
-      case 'active':
-        whereClause.subscription_end = { gt: now };
-        break;
-      case 'expired':
-        whereClause.subscription_end = { lte: now };
-        break;
-      case 'expiring_soon':
-        whereClause.subscription_end = {
-          gt: now,
-          lte: sevenDaysFromNow,
-        };
-        break;
-    }
   }
 
   const orderBy: Prisma.ShopOrderByWithRelationInput[] = [];
