@@ -185,12 +185,12 @@ model Setting {
   id                   String   @id @default(uuid())
   shop_id              String   @unique
   display_name         String
-  address              String
-  phone_number         String
+  address              String?
+  phone_number         String?
   email                String
-  logo_url             String
-  receipt_header_text  String
-  receipt_footer_text  String
+  logo_url             String?
+  receipt_header_text  String?
+  receipt_footer_text  String?
   show_logo_on_receipt Boolean  @default(true)
   created_at           DateTime @default(now())
   updated_at           DateTime @updatedAt

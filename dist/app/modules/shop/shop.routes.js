@@ -15,7 +15,7 @@ const router = express_1.default.Router();
 router.get('/', (0, auth_1.default)(client_1.Role.SUPER_ADMIN), shop_controller_1.default.GetShops);
 router.get('/:id', (0, auth_1.default)(client_1.Role.SUPER_ADMIN), shop_controller_1.default.GetShopById);
 router.post('/', (0, auth_1.default)(client_1.Role.SUPER_ADMIN), (0, validateRequest_1.default)(shop_validation_1.default.CreateShopSchema), shop_controller_1.default.CreateShop);
-router.patch('/:id', (0, auth_1.default)(client_1.Role.SUPER_ADMIN), (0, validateRequest_1.default)(shop_validation_1.default.UpdateShopSchema), shop_controller_1.default.UpdateShop);
+router.patch('/:id', (0, auth_1.default)(client_1.Role.SUPER_ADMIN, client_1.Role.ADMIN), (0, validateRequest_1.default)(shop_validation_1.default.UpdateShopSchema), shop_controller_1.default.UpdateShop);
 router.patch('/:id/subscription', (0, auth_1.default)(client_1.Role.SUPER_ADMIN), (0, validateRequest_1.default)(shop_validation_1.default.UpdateSubscriptionSchema), shop_controller_1.default.UpdateSubscription);
 router.delete('/:id', (0, auth_1.default)(client_1.Role.SUPER_ADMIN), shop_controller_1.default.DeleteShop);
 exports.ShopRoutes = router;

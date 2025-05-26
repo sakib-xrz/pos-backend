@@ -18,7 +18,7 @@ router.post(
 );
 router.patch(
   '/:id',
-  auth(Role.SUPER_ADMIN),
+  auth(Role.SUPER_ADMIN, Role.ADMIN),
   validateRequest(ShopValidation.UpdateShopSchema),
   ShopController.UpdateShop,
 );

@@ -25,15 +25,22 @@ export interface CreateShopPayload {
   admin_name: string;
   admin_email: string;
   admin_password: string;
+  settings: {
+    display_name: string;
+    address?: string;
+    phone_number?: string;
+    email: string;
+    logo_url?: string;
+    receipt_header_text: string;
+    receipt_footer_text: string;
+    show_logo_on_receipt: boolean;
+  };
 }
 
 export interface UpdateShopPayload {
   name?: string;
   branch_name?: string;
   type?: ShopType;
-  subscription_plan?: SubscriptionPlan;
-  subscription_end?: string;
-  is_active?: boolean;
 }
 
 const GetShops = async (query: GetShopsQuery) => {
@@ -230,6 +237,16 @@ const CreateShop = async (payload: CreateShopPayload) => {
 
   // Start transaction
   const result = await prisma.$transaction(async (tx) => {
+    // set subscription_end based on subscription_plan
+    const subscriptionEnd = new Date();
+    if (payload.subscription_plan === SubscriptionPlan.ONE_MONTH) {
+      subscriptionEnd.setMonth(subscriptionEnd.getMonth() + 1);
+    } else if (payload.subscription_plan === SubscriptionPlan.SIX_MONTHS) {
+      subscriptionEnd.setMonth(subscriptionEnd.getMonth() + 6);
+    } else if (payload.subscription_plan === SubscriptionPlan.ONE_YEAR) {
+      subscriptionEnd.setFullYear(subscriptionEnd.getFullYear() + 1);
+    }
+
     // Create shop
     const shop = await tx.shop.create({
       data: {
@@ -237,7 +254,7 @@ const CreateShop = async (payload: CreateShopPayload) => {
         branch_name: payload.branch_name,
         type: payload.type,
         subscription_plan: payload.subscription_plan,
-        subscription_end: new Date(payload.subscription_end),
+        subscription_end: subscriptionEnd,
       },
     });
 
@@ -270,10 +287,7 @@ const CreateShop = async (payload: CreateShopPayload) => {
       data: {
         shop_id: shop.id,
         display_name: payload.name,
-        address: '',
-        phone_number: '',
         email: payload.admin_email,
-        logo_url: '',
         receipt_header_text: `Welcome to ${payload.name}`,
         receipt_footer_text: 'Thank you for your business!',
       },
@@ -300,11 +314,6 @@ const UpdateShop = async (id: string, payload: UpdateShopPayload) => {
   if (payload.branch_name !== undefined)
     updateData.branch_name = payload.branch_name;
   if (payload.type) updateData.type = payload.type;
-  if (payload.subscription_plan)
-    updateData.subscription_plan = payload.subscription_plan;
-  if (payload.subscription_end)
-    updateData.subscription_end = new Date(payload.subscription_end);
-  if (payload.is_active !== undefined) updateData.is_active = payload.is_active;
 
   const updatedShop = await prisma.shop.update({
     where: { id },
@@ -323,7 +332,7 @@ const UpdateShop = async (id: string, payload: UpdateShopPayload) => {
 
 const UpdateSubscription = async (
   id: string,
-  payload: { subscription_plan: SubscriptionPlan; subscription_end: string },
+  payload: { subscription_plan: SubscriptionPlan; is_active: boolean },
 ) => {
   const existingShop = await prisma.shop.findUnique({
     where: { id },
@@ -333,12 +342,22 @@ const UpdateSubscription = async (
     throw new AppError(httpStatus.NOT_FOUND, 'Shop not found');
   }
 
+  // set subscription_end based on subscription_plan
+  const subscriptionEnd = new Date();
+  if (payload.subscription_plan === SubscriptionPlan.ONE_MONTH) {
+    subscriptionEnd.setMonth(subscriptionEnd.getMonth() + 1);
+  } else if (payload.subscription_plan === SubscriptionPlan.SIX_MONTHS) {
+    subscriptionEnd.setMonth(subscriptionEnd.getMonth() + 6);
+  } else if (payload.subscription_plan === SubscriptionPlan.ONE_YEAR) {
+    subscriptionEnd.setFullYear(subscriptionEnd.getFullYear() + 1);
+  }
+
   const updatedShop = await prisma.shop.update({
     where: { id },
     data: {
       subscription_plan: payload.subscription_plan,
-      subscription_end: new Date(payload.subscription_end),
-      is_active: true, // Reactivate shop when subscription is updated
+      subscription_end: subscriptionEnd,
+      is_active: payload.is_active,
     },
   });
 

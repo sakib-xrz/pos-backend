@@ -24,6 +24,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const http_status_1 = __importDefault(require("http-status"));
+const client_1 = require("@prisma/client");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const AppError_1 = __importDefault(require("../../errors/AppError"));
 const prisma_1 = __importDefault(require("../../utils/prisma"));
@@ -182,6 +183,17 @@ const CreateShop = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     }
     // Start transaction
     const result = yield prisma_1.default.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
+        // set subscription_end based on subscription_plan
+        const subscriptionEnd = new Date();
+        if (payload.subscription_plan === client_1.SubscriptionPlan.ONE_MONTH) {
+            subscriptionEnd.setMonth(subscriptionEnd.getMonth() + 1);
+        }
+        else if (payload.subscription_plan === client_1.SubscriptionPlan.SIX_MONTHS) {
+            subscriptionEnd.setMonth(subscriptionEnd.getMonth() + 6);
+        }
+        else if (payload.subscription_plan === client_1.SubscriptionPlan.ONE_YEAR) {
+            subscriptionEnd.setFullYear(subscriptionEnd.getFullYear() + 1);
+        }
         // Create shop
         const shop = yield tx.shop.create({
             data: {
@@ -189,7 +201,7 @@ const CreateShop = (payload) => __awaiter(void 0, void 0, void 0, function* () {
                 branch_name: payload.branch_name,
                 type: payload.type,
                 subscription_plan: payload.subscription_plan,
-                subscription_end: new Date(payload.subscription_end),
+                subscription_end: subscriptionEnd,
             },
         });
         // Hash admin password
@@ -216,10 +228,7 @@ const CreateShop = (payload) => __awaiter(void 0, void 0, void 0, function* () {
             data: {
                 shop_id: shop.id,
                 display_name: payload.name,
-                address: '',
-                phone_number: '',
                 email: payload.admin_email,
-                logo_url: '',
                 receipt_header_text: `Welcome to ${payload.name}`,
                 receipt_footer_text: 'Thank you for your business!',
             },
@@ -242,12 +251,6 @@ const UpdateShop = (id, payload) => __awaiter(void 0, void 0, void 0, function* 
         updateData.branch_name = payload.branch_name;
     if (payload.type)
         updateData.type = payload.type;
-    if (payload.subscription_plan)
-        updateData.subscription_plan = payload.subscription_plan;
-    if (payload.subscription_end)
-        updateData.subscription_end = new Date(payload.subscription_end);
-    if (payload.is_active !== undefined)
-        updateData.is_active = payload.is_active;
     const updatedShop = yield prisma_1.default.shop.update({
         where: { id },
         data: updateData,
@@ -268,12 +271,23 @@ const UpdateSubscription = (id, payload) => __awaiter(void 0, void 0, void 0, fu
     if (!existingShop) {
         throw new AppError_1.default(http_status_1.default.NOT_FOUND, 'Shop not found');
     }
+    // set subscription_end based on subscription_plan
+    const subscriptionEnd = new Date();
+    if (payload.subscription_plan === client_1.SubscriptionPlan.ONE_MONTH) {
+        subscriptionEnd.setMonth(subscriptionEnd.getMonth() + 1);
+    }
+    else if (payload.subscription_plan === client_1.SubscriptionPlan.SIX_MONTHS) {
+        subscriptionEnd.setMonth(subscriptionEnd.getMonth() + 6);
+    }
+    else if (payload.subscription_plan === client_1.SubscriptionPlan.ONE_YEAR) {
+        subscriptionEnd.setFullYear(subscriptionEnd.getFullYear() + 1);
+    }
     const updatedShop = yield prisma_1.default.shop.update({
         where: { id },
         data: {
             subscription_plan: payload.subscription_plan,
-            subscription_end: new Date(payload.subscription_end),
-            is_active: true, // Reactivate shop when subscription is updated
+            subscription_end: subscriptionEnd,
+            is_active: payload.is_active,
         },
     });
     return updatedShop;
