@@ -279,11 +279,35 @@ const DeleteShop = (id) => __awaiter(void 0, void 0, void 0, function* () {
     if (!existingShop) {
         throw new AppError_1.default(http_status_1.default.NOT_FOUND, 'Shop not found');
     }
-    // Soft delete by deactivating
-    yield prisma_1.default.shop.update({
-        where: { id },
-        data: { is_active: false },
-    });
+    yield prisma_1.default.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
+        // Delete related users
+        yield tx.user.deleteMany({
+            where: { shop_id: id },
+        });
+        // Delete related settings
+        yield tx.setting.delete({
+            where: { shop_id: id },
+        });
+        // Delete related products
+        yield tx.product.deleteMany({
+            where: { shop_id: id },
+        });
+        // Delete related orders
+        yield tx.order.deleteMany({
+            where: { shop_id: id },
+        });
+        yield tx.orderItem.deleteMany({
+            where: { order: { shop_id: id } },
+        });
+        // Delete related categories
+        yield tx.category.deleteMany({
+            where: { shop_id: id },
+        });
+        // Delete the shop
+        yield tx.shop.delete({
+            where: { id },
+        });
+    }));
 });
 const ShopService = {
     GetShops,

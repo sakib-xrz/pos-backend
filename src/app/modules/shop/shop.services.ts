@@ -345,10 +345,40 @@ const DeleteShop = async (id: string) => {
     throw new AppError(httpStatus.NOT_FOUND, 'Shop not found');
   }
 
-  // Soft delete by deactivating
-  await prisma.shop.update({
-    where: { id },
-    data: { is_active: false },
+  await prisma.$transaction(async (tx) => {
+    // Delete related users
+    await tx.user.deleteMany({
+      where: { shop_id: id },
+    });
+
+    // Delete related settings
+    await tx.setting.delete({
+      where: { shop_id: id },
+    });
+
+    // Delete related products
+    await tx.product.deleteMany({
+      where: { shop_id: id },
+    });
+
+    // Delete related orders
+    await tx.order.deleteMany({
+      where: { shop_id: id },
+    });
+
+    await tx.orderItem.deleteMany({
+      where: { order: { shop_id: id } },
+    });
+
+    // Delete related categories
+    await tx.category.deleteMany({
+      where: { shop_id: id },
+    });
+
+    // Delete the shop
+    await tx.shop.delete({
+      where: { id },
+    });
   });
 };
 
