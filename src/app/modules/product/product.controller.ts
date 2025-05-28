@@ -48,7 +48,21 @@ const CreateProduct = catchAsync(async (req, res) => {
 
 const UpdateProduct = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const result = await ProductService.UpdateProduct(id, req.body);
+
+  // Check if super admin is trying to update product
+  if (req.user.role === 'SUPER_ADMIN') {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      'Super admin cannot update products',
+    );
+  }
+
+  const result = await ProductService.UpdateProduct(
+    id,
+    req.body,
+    req.file,
+    req.user,
+  );
 
   sendResponse(res, {
     success: true,

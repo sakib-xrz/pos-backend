@@ -9,7 +9,7 @@ import { upload } from '../../utils/handelFile';
 const router = express.Router();
 
 // GET /api/products - Get products with filters, search, and pagination
-router.get('/', ProductController.GetProducts);
+router.get('/', auth(Role.ADMIN, Role.STAFF), ProductController.GetProducts);
 
 // POST /api/products - Create new product with image upload (Admin only)
 router.post(
