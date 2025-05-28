@@ -4,7 +4,7 @@ import sendResponse from '../../utils/sendResponse';
 import UserService from './user.services';
 
 const GetUsers = catchAsync(async (req, res) => {
-  const result = await UserService.GetUsers(req.query);
+  const result = await UserService.GetUsers(req.query, req.user?.shop_id);
 
   sendResponse(res, {
     success: true,
@@ -16,7 +16,7 @@ const GetUsers = catchAsync(async (req, res) => {
 });
 
 const CreateUser = catchAsync(async (req, res) => {
-  const result = await UserService.CreateUser(req.body);
+  const result = await UserService.CreateUser(req.body, req.user?.shop_id);
 
   sendResponse(res, {
     success: true,
@@ -28,7 +28,7 @@ const CreateUser = catchAsync(async (req, res) => {
 
 const UpdateUser = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const result = await UserService.UpdateUser(id, req.body);
+  const result = await UserService.UpdateUser(id, req.body, req.user?.shop_id);
 
   sendResponse(res, {
     success: true,
@@ -41,7 +41,7 @@ const UpdateUser = catchAsync(async (req, res) => {
 const ResetPassword = catchAsync(async (req, res) => {
   const { id } = req.params;
   const { new_password } = req.body;
-  await UserService.ResetPassword(id, new_password);
+  await UserService.ResetPassword(id, new_password, req.user?.shop_id);
 
   sendResponse(res, {
     success: true,
@@ -52,7 +52,7 @@ const ResetPassword = catchAsync(async (req, res) => {
 
 const DeleteUser = catchAsync(async (req, res) => {
   const { id } = req.params;
-  await UserService.DeleteUser(id);
+  await UserService.DeleteUser(id, req.user?.shop_id);
 
   sendResponse(res, {
     success: true,

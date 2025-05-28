@@ -129,11 +129,9 @@ const GetUsers = async (query: GetUsersQuery, userShopId?: string) => {
   return { users: usersWithCounts, meta };
 };
 
-const CreateUser = async (
-  payload: CreateUserPayload & { shop_id?: string },
-) => {
+const CreateUser = async (payload: CreateUserPayload, userShopId?: string) => {
   // Prevent creation of SUPER_ADMIN by non-super-admin users
-  if (payload.role === 'SUPER_ADMIN' && payload.shop_id) {
+  if (payload.role === 'SUPER_ADMIN' && userShopId) {
     throw new AppError(
       httpStatus.FORBIDDEN,
       'Cannot create super admin user in shop context',
@@ -170,7 +168,7 @@ const CreateUser = async (
       email: payload.email,
       password: hashedPassword,
       role: payload.role,
-      shop_id: payload.shop_id,
+      shop_id: userShopId,
     },
     select: {
       id: true,
@@ -192,12 +190,17 @@ const CreateUser = async (
   return user;
 };
 
-const UpdateUser = async (id: string, payload: UpdateUserPayload) => {
+const UpdateUser = async (
+  id: string,
+  payload: UpdateUserPayload,
+  userShopId?: string,
+) => {
   // Check if user exists and is not deleted
   const existingUser = await prisma.user.findFirst({
     where: {
       id,
       is_deleted: false,
+      shop_id: userShopId,
     },
   });
 
@@ -220,6 +223,7 @@ const UpdateUser = async (id: string, payload: UpdateUserPayload) => {
           not: id, // Exclude current user
         },
         is_deleted: false,
+        shop_id: userShopId,
       },
     });
 
@@ -232,7 +236,7 @@ const UpdateUser = async (id: string, payload: UpdateUserPayload) => {
   }
 
   const updatedUser = await prisma.user.update({
-    where: { id },
+    where: { id, shop_id: userShopId },
     data: payload,
     select: {
       id: true,
@@ -247,12 +251,17 @@ const UpdateUser = async (id: string, payload: UpdateUserPayload) => {
   return updatedUser;
 };
 
-const ResetPassword = async (id: string, newPassword: string) => {
+const ResetPassword = async (
+  id: string,
+  newPassword: string,
+  userShopId?: string,
+) => {
   // Check if user exists and is not deleted
   const existingUser = await prisma.user.findFirst({
     where: {
       id,
       is_deleted: false,
+      shop_id: userShopId,
     },
   });
 
@@ -270,19 +279,20 @@ const ResetPassword = async (id: string, newPassword: string) => {
   );
 
   await prisma.user.update({
-    where: { id },
+    where: { id, shop_id: userShopId },
     data: {
       password: hashedPassword,
     },
   });
 };
 
-const DeleteUser = async (id: string) => {
+const DeleteUser = async (id: string, userShopId?: string) => {
   // Check if user exists and is not already deleted
   const existingUser = await prisma.user.findFirst({
     where: {
       id,
       is_deleted: false,
+      shop_id: userShopId,
     },
   });
 
@@ -297,6 +307,7 @@ const DeleteUser = async (id: string) => {
   const orderCount = await prisma.order.count({
     where: {
       created_by: id,
+      shop_id: userShopId,
     },
   });
 
@@ -309,7 +320,7 @@ const DeleteUser = async (id: string) => {
 
   // Soft delete the user
   await prisma.user.update({
-    where: { id },
+    where: { id, shop_id: userShopId },
     data: {
       is_deleted: true,
     },
