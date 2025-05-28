@@ -29,21 +29,6 @@ router.patch(
   CategoryController.UpdateCategory,
 );
 
-// PATCH /api/categories/:id/image - Update category image only (Admin only)
-router.patch(
-  '/:id/image',
-  auth(Role.ADMIN),
-  upload.single('image'), // Handle image upload
-  CategoryController.UpdateCategoryImage,
-);
-
-// DELETE /api/categories/:id/image - Delete category image only (Admin only)
-router.delete(
-  '/:id/image',
-  auth(Role.ADMIN),
-  CategoryController.DeleteCategoryImage,
-);
-
 // DELETE /api/categories/:id - Delete category (Admin only)
 router.delete('/:id', auth(Role.ADMIN), CategoryController.DeleteCategory);
 

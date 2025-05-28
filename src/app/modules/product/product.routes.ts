@@ -29,21 +29,6 @@ router.patch(
   ProductController.UpdateProduct,
 );
 
-// PATCH /api/products/:id/image - Update product image only (Admin only)
-router.patch(
-  '/:id/image',
-  auth(Role.ADMIN),
-  upload.single('image'), // Handle image upload
-  ProductController.UpdateProductImage,
-);
-
-// DELETE /api/products/:id/image - Delete product image only (Admin only)
-router.delete(
-  '/:id/image',
-  auth(Role.ADMIN),
-  ProductController.DeleteProductImage,
-);
-
 // DELETE /api/products/:id - Delete product (Admin only)
 router.delete('/:id', auth(Role.ADMIN), ProductController.DeleteProduct);
 

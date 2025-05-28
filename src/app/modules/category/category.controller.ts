@@ -53,43 +53,6 @@ const UpdateCategory = catchAsync(async (req, res) => {
   });
 });
 
-const UpdateCategoryImage = catchAsync(async (req, res) => {
-  const { id } = req.params;
-
-  if (!req.file) {
-    return sendResponse(res, {
-      success: false,
-      statusCode: httpStatus.BAD_REQUEST,
-      message: 'Category image is required',
-    });
-  }
-
-  const result = await CategoryService.UpdateCategoryImage(
-    id,
-    req.file,
-    req.user,
-  );
-
-  sendResponse(res, {
-    success: true,
-    statusCode: httpStatus.OK,
-    message: 'Category image updated successfully',
-    data: result,
-  });
-});
-
-const DeleteCategoryImage = catchAsync(async (req, res) => {
-  const { id } = req.params;
-  const result = await CategoryService.DeleteCategoryImage(id, req.user);
-
-  sendResponse(res, {
-    success: true,
-    statusCode: httpStatus.OK,
-    message: 'Category image deleted successfully',
-    data: result,
-  });
-});
-
 const DeleteCategory = catchAsync(async (req, res) => {
   const { id } = req.params;
   await CategoryService.DeleteCategory(id, req.user);
@@ -105,8 +68,6 @@ const CategoryController = {
   GetCategories,
   CreateCategory,
   UpdateCategory,
-  UpdateCategoryImage,
-  DeleteCategoryImage,
   DeleteCategory,
 };
 

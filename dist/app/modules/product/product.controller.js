@@ -54,33 +54,6 @@ const UpdateProduct = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, 
         data: result,
     });
 }));
-const UpdateProductImage = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id } = req.params;
-    if (!req.file) {
-        return (0, sendResponse_1.default)(res, {
-            success: false,
-            statusCode: http_status_1.default.BAD_REQUEST,
-            message: 'Product image is required',
-        });
-    }
-    const result = yield product_services_1.default.UpdateProductImage(id, req.file);
-    (0, sendResponse_1.default)(res, {
-        success: true,
-        statusCode: http_status_1.default.OK,
-        message: 'Product image updated successfully',
-        data: result,
-    });
-}));
-const DeleteProductImage = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id } = req.params;
-    const result = yield product_services_1.default.DeleteProductImage(id);
-    (0, sendResponse_1.default)(res, {
-        success: true,
-        statusCode: http_status_1.default.OK,
-        message: 'Product image deleted successfully',
-        data: result,
-    });
-}));
 const DeleteProduct = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     yield product_services_1.default.DeleteProduct(id);
@@ -105,8 +78,6 @@ const ProductController = {
     GetProducts,
     CreateProduct,
     UpdateProduct,
-    UpdateProductImage,
-    DeleteProductImage,
     DeleteProduct,
     ToggleAvailability,
 };

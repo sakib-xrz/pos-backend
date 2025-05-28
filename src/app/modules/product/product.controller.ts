@@ -72,39 +72,6 @@ const UpdateProduct = catchAsync(async (req, res) => {
   });
 });
 
-const UpdateProductImage = catchAsync(async (req, res) => {
-  const { id } = req.params;
-
-  if (!req.file) {
-    return sendResponse(res, {
-      success: false,
-      statusCode: httpStatus.BAD_REQUEST,
-      message: 'Product image is required',
-    });
-  }
-
-  const result = await ProductService.UpdateProductImage(id, req.file);
-
-  sendResponse(res, {
-    success: true,
-    statusCode: httpStatus.OK,
-    message: 'Product image updated successfully',
-    data: result,
-  });
-});
-
-const DeleteProductImage = catchAsync(async (req, res) => {
-  const { id } = req.params;
-  const result = await ProductService.DeleteProductImage(id);
-
-  sendResponse(res, {
-    success: true,
-    statusCode: httpStatus.OK,
-    message: 'Product image deleted successfully',
-    data: result,
-  });
-});
-
 const DeleteProduct = catchAsync(async (req, res) => {
   const { id } = req.params;
   await ProductService.DeleteProduct(id);
@@ -133,8 +100,6 @@ const ProductController = {
   GetProducts,
   CreateProduct,
   UpdateProduct,
-  UpdateProductImage,
-  DeleteProductImage,
   DeleteProduct,
   ToggleAvailability,
 };

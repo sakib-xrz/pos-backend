@@ -20,11 +20,6 @@ router.post('/', (0, auth_1.default)(client_1.Role.ADMIN), handelFile_1.upload.s
 // PATCH /api/categories/:id - Update category with optional image upload (Admin only)
 router.patch('/:id', (0, auth_1.default)(client_1.Role.ADMIN), handelFile_1.upload.single('image'), // Handle optional image upload
 (0, validateRequest_1.default)(category_validation_1.default.UpdateCategorySchema), category_controller_1.default.UpdateCategory);
-// PATCH /api/categories/:id/image - Update category image only (Admin only)
-router.patch('/:id/image', (0, auth_1.default)(client_1.Role.ADMIN), handelFile_1.upload.single('image'), // Handle image upload
-category_controller_1.default.UpdateCategoryImage);
-// DELETE /api/categories/:id/image - Delete category image only (Admin only)
-router.delete('/:id/image', (0, auth_1.default)(client_1.Role.ADMIN), category_controller_1.default.DeleteCategoryImage);
 // DELETE /api/categories/:id - Delete category (Admin only)
 router.delete('/:id', (0, auth_1.default)(client_1.Role.ADMIN), category_controller_1.default.DeleteCategory);
 exports.CategoryRoutes = router;

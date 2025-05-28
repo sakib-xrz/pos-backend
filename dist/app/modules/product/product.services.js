@@ -242,95 +242,6 @@ const UpdateProduct = (id, payload, file, user) => __awaiter(void 0, void 0, voi
     });
     return updatedProduct;
 });
-const UpdateProductImage = (id, file) => __awaiter(void 0, void 0, void 0, function* () {
-    // Check if product exists and is not deleted
-    const existingProduct = yield prisma_1.default.product.findFirst({
-        where: {
-            id,
-            is_deleted: false,
-        },
-    });
-    if (!existingProduct) {
-        throw new AppError_1.default(http_status_1.default.NOT_FOUND, 'Product not found or has been deleted');
-    }
-    try {
-        // Delete old image if exists
-        if (existingProduct.image) {
-            const publicId = (0, handelFile_1.extractPublicIdFromUrl)(existingProduct.image);
-            if (publicId) {
-                yield (0, handelFile_1.deleteFromCloudinary)([publicId]);
-            }
-        }
-        // Upload new image
-        const uploadResult = yield (0, handelFile_1.uploadToCloudinary)(file, {
-            folder: 'products',
-            public_id: `product_${id}_${Date.now()}`,
-        });
-        const updatedProduct = yield prisma_1.default.product.update({
-            where: { id },
-            data: {
-                image: uploadResult === null || uploadResult === void 0 ? void 0 : uploadResult.secure_url,
-            },
-            include: {
-                category: {
-                    select: {
-                        id: true,
-                        name: true,
-                        image: true,
-                    },
-                },
-            },
-        });
-        return updatedProduct;
-    }
-    catch (error) {
-        console.log('Error from cloudinary while updating product image', error);
-        throw new AppError_1.default(http_status_1.default.BAD_REQUEST, 'Failed to update product image');
-    }
-});
-const DeleteProductImage = (id) => __awaiter(void 0, void 0, void 0, function* () {
-    // Check if product exists and is not deleted
-    const existingProduct = yield prisma_1.default.product.findFirst({
-        where: {
-            id,
-            is_deleted: false,
-        },
-    });
-    if (!existingProduct) {
-        throw new AppError_1.default(http_status_1.default.NOT_FOUND, 'Product not found or has been deleted');
-    }
-    if (!existingProduct.image) {
-        throw new AppError_1.default(http_status_1.default.BAD_REQUEST, 'Product does not have an image to delete');
-    }
-    try {
-        // Delete image from Cloudinary
-        const publicId = (0, handelFile_1.extractPublicIdFromUrl)(existingProduct.image);
-        if (publicId) {
-            yield (0, handelFile_1.deleteFromCloudinary)([publicId]);
-        }
-        // Update product to remove image URL
-        const updatedProduct = yield prisma_1.default.product.update({
-            where: { id },
-            data: {
-                image: null,
-            },
-            include: {
-                category: {
-                    select: {
-                        id: true,
-                        name: true,
-                        image: true,
-                    },
-                },
-            },
-        });
-        return updatedProduct;
-    }
-    catch (error) {
-        console.log('Error from cloudinary while deleting product image', error);
-        throw new AppError_1.default(http_status_1.default.BAD_REQUEST, 'Failed to delete product image');
-    }
-});
 const DeleteProduct = (id) => __awaiter(void 0, void 0, void 0, function* () {
     // Check if product exists and is not already deleted
     const existingProduct = yield prisma_1.default.product.findFirst({
@@ -404,8 +315,6 @@ const ProductService = {
     GetProducts,
     CreateProduct,
     UpdateProduct,
-    UpdateProductImage,
-    DeleteProductImage,
     DeleteProduct,
     ToggleAvailability,
 };

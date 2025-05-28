@@ -207,101 +207,6 @@ const UpdateCategory = (id, payload, file, user) => __awaiter(void 0, void 0, vo
     });
     return Object.assign(Object.assign({}, updatedCategory), { product_count: updatedCategory._count.products, _count: undefined });
 });
-const UpdateCategoryImage = (id, file, user) => __awaiter(void 0, void 0, void 0, function* () {
-    // Check if category exists and is not deleted
-    const existingCategory = yield prisma_1.default.category.findFirst({
-        where: {
-            id,
-            is_deleted: false,
-            shop_id: user === null || user === void 0 ? void 0 : user.shop_id,
-        },
-    });
-    if (!existingCategory) {
-        throw new AppError_1.default(http_status_1.default.NOT_FOUND, 'Category not found or has been deleted');
-    }
-    try {
-        // Delete old image if exists
-        if (existingCategory.image) {
-            const publicId = (0, handelFile_1.extractPublicIdFromUrl)(existingCategory.image);
-            if (publicId) {
-                yield (0, handelFile_1.deleteFromCloudinary)([publicId]);
-            }
-        }
-        // Upload new image
-        const uploadResult = yield (0, handelFile_1.uploadToCloudinary)(file, {
-            folder: 'categories',
-            public_id: `category_${id}_${Date.now()}`,
-        });
-        const updatedCategory = yield prisma_1.default.category.update({
-            where: { id },
-            data: {
-                image: uploadResult === null || uploadResult === void 0 ? void 0 : uploadResult.secure_url,
-            },
-            include: {
-                _count: {
-                    select: {
-                        products: {
-                            where: {
-                                is_deleted: false,
-                            },
-                        },
-                    },
-                },
-            },
-        });
-        return Object.assign(Object.assign({}, updatedCategory), { product_count: updatedCategory._count.products, _count: undefined });
-    }
-    catch (error) {
-        console.log('Error from cloudinary while updating category image', error);
-        throw new AppError_1.default(http_status_1.default.BAD_REQUEST, 'Failed to update category image');
-    }
-});
-const DeleteCategoryImage = (id, user) => __awaiter(void 0, void 0, void 0, function* () {
-    // Check if category exists and is not deleted
-    const existingCategory = yield prisma_1.default.category.findFirst({
-        where: {
-            id,
-            is_deleted: false,
-            shop_id: user === null || user === void 0 ? void 0 : user.shop_id,
-        },
-    });
-    if (!existingCategory) {
-        throw new AppError_1.default(http_status_1.default.NOT_FOUND, 'Category not found or has been deleted');
-    }
-    if (!existingCategory.image) {
-        throw new AppError_1.default(http_status_1.default.BAD_REQUEST, 'Category does not have an image to delete');
-    }
-    try {
-        // Delete image from Cloudinary
-        const publicId = (0, handelFile_1.extractPublicIdFromUrl)(existingCategory.image);
-        if (publicId) {
-            yield (0, handelFile_1.deleteFromCloudinary)([publicId]);
-        }
-        // Update category to remove image URL
-        const updatedCategory = yield prisma_1.default.category.update({
-            where: { id },
-            data: {
-                image: null,
-            },
-            include: {
-                _count: {
-                    select: {
-                        products: {
-                            where: {
-                                is_deleted: false,
-                            },
-                        },
-                    },
-                },
-            },
-        });
-        return Object.assign(Object.assign({}, updatedCategory), { product_count: updatedCategory._count.products, _count: undefined });
-    }
-    catch (error) {
-        console.log('Error from cloudinary while deleting category image', error);
-        throw new AppError_1.default(http_status_1.default.BAD_REQUEST, 'Failed to delete category image');
-    }
-});
 const DeleteCategory = (id, user) => __awaiter(void 0, void 0, void 0, function* () {
     // Check if category exists and is not already deleted
     const existingCategory = yield prisma_1.default.category.findFirst({
@@ -350,8 +255,6 @@ const CategoryService = {
     GetCategories,
     CreateCategory,
     UpdateCategory,
-    UpdateCategoryImage,
-    DeleteCategoryImage,
     DeleteCategory,
 };
 exports.default = CategoryService;

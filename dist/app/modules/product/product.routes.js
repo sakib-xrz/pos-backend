@@ -20,11 +20,6 @@ router.post('/', (0, auth_1.default)(client_1.Role.ADMIN), handelFile_1.upload.s
 // PATCH /api/products/:id - Update product with optional image upload (Admin only)
 router.patch('/:id', (0, auth_1.default)(client_1.Role.ADMIN), handelFile_1.upload.single('image'), // Handle optional image upload
 (0, validateRequest_1.default)(product_validation_1.default.UpdateProductSchema), product_controller_1.default.UpdateProduct);
-// PATCH /api/products/:id/image - Update product image only (Admin only)
-router.patch('/:id/image', (0, auth_1.default)(client_1.Role.ADMIN), handelFile_1.upload.single('image'), // Handle image upload
-product_controller_1.default.UpdateProductImage);
-// DELETE /api/products/:id/image - Delete product image only (Admin only)
-router.delete('/:id/image', (0, auth_1.default)(client_1.Role.ADMIN), product_controller_1.default.DeleteProductImage);
 // DELETE /api/products/:id - Delete product (Admin only)
 router.delete('/:id', (0, auth_1.default)(client_1.Role.ADMIN), product_controller_1.default.DeleteProduct);
 // PATCH /api/products/:id/availability - Toggle availability (Admin only)

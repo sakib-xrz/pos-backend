@@ -50,33 +50,6 @@ const UpdateCategory = (0, catchAsync_1.default)((req, res) => __awaiter(void 0,
         data: result,
     });
 }));
-const UpdateCategoryImage = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id } = req.params;
-    if (!req.file) {
-        return (0, sendResponse_1.default)(res, {
-            success: false,
-            statusCode: http_status_1.default.BAD_REQUEST,
-            message: 'Category image is required',
-        });
-    }
-    const result = yield category_services_1.default.UpdateCategoryImage(id, req.file, req.user);
-    (0, sendResponse_1.default)(res, {
-        success: true,
-        statusCode: http_status_1.default.OK,
-        message: 'Category image updated successfully',
-        data: result,
-    });
-}));
-const DeleteCategoryImage = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id } = req.params;
-    const result = yield category_services_1.default.DeleteCategoryImage(id, req.user);
-    (0, sendResponse_1.default)(res, {
-        success: true,
-        statusCode: http_status_1.default.OK,
-        message: 'Category image deleted successfully',
-        data: result,
-    });
-}));
 const DeleteCategory = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     yield category_services_1.default.DeleteCategory(id, req.user);
@@ -90,8 +63,6 @@ const CategoryController = {
     GetCategories,
     CreateCategory,
     UpdateCategory,
-    UpdateCategoryImage,
-    DeleteCategoryImage,
     DeleteCategory,
 };
 exports.default = CategoryController;

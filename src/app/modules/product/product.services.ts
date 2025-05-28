@@ -310,120 +310,6 @@ const UpdateProduct = async (
   return updatedProduct;
 };
 
-const UpdateProductImage = async (id: string, file: Express.Multer.File) => {
-  // Check if product exists and is not deleted
-  const existingProduct = await prisma.product.findFirst({
-    where: {
-      id,
-      is_deleted: false,
-    },
-  });
-
-  if (!existingProduct) {
-    throw new AppError(
-      httpStatus.NOT_FOUND,
-      'Product not found or has been deleted',
-    );
-  }
-
-  try {
-    // Delete old image if exists
-    if (existingProduct.image) {
-      const publicId = extractPublicIdFromUrl(existingProduct.image);
-      if (publicId) {
-        await deleteFromCloudinary([publicId]);
-      }
-    }
-
-    // Upload new image
-    const uploadResult = await uploadToCloudinary(file, {
-      folder: 'products',
-      public_id: `product_${id}_${Date.now()}`,
-    });
-
-    const updatedProduct = await prisma.product.update({
-      where: { id },
-      data: {
-        image: uploadResult?.secure_url,
-      },
-      include: {
-        category: {
-          select: {
-            id: true,
-            name: true,
-            image: true,
-          },
-        },
-      },
-    });
-
-    return updatedProduct;
-  } catch (error) {
-    console.log('Error from cloudinary while updating product image', error);
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      'Failed to update product image',
-    );
-  }
-};
-
-const DeleteProductImage = async (id: string) => {
-  // Check if product exists and is not deleted
-  const existingProduct = await prisma.product.findFirst({
-    where: {
-      id,
-      is_deleted: false,
-    },
-  });
-
-  if (!existingProduct) {
-    throw new AppError(
-      httpStatus.NOT_FOUND,
-      'Product not found or has been deleted',
-    );
-  }
-
-  if (!existingProduct.image) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      'Product does not have an image to delete',
-    );
-  }
-
-  try {
-    // Delete image from Cloudinary
-    const publicId = extractPublicIdFromUrl(existingProduct.image);
-    if (publicId) {
-      await deleteFromCloudinary([publicId]);
-    }
-
-    // Update product to remove image URL
-    const updatedProduct = await prisma.product.update({
-      where: { id },
-      data: {
-        image: null,
-      },
-      include: {
-        category: {
-          select: {
-            id: true,
-            name: true,
-            image: true,
-          },
-        },
-      },
-    });
-
-    return updatedProduct;
-  } catch (error) {
-    console.log('Error from cloudinary while deleting product image', error);
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      'Failed to delete product image',
-    );
-  }
-};
-
 const DeleteProduct = async (id: string) => {
   // Check if product exists and is not already deleted
   const existingProduct = await prisma.product.findFirst({
@@ -518,8 +404,6 @@ const ProductService = {
   GetProducts,
   CreateProduct,
   UpdateProduct,
-  UpdateProductImage,
-  DeleteProductImage,
   DeleteProduct,
   ToggleAvailability,
 };
