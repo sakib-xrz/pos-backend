@@ -28,13 +28,14 @@ const AppError_1 = __importDefault(require("../../errors/AppError"));
 const prisma_1 = __importDefault(require("../../utils/prisma"));
 const handelFile_1 = require("../../utils/handelFile");
 const pagination_1 = __importDefault(require("../../utils/pagination"));
-const GetCategories = (query) => __awaiter(void 0, void 0, void 0, function* () {
+const GetCategories = (query, user) => __awaiter(void 0, void 0, void 0, function* () {
     const { search } = query, paginationOptions = __rest(query, ["search"]);
     // Calculate pagination with your utility
     const { page, limit, skip, sort_by, sort_order } = (0, pagination_1.default)(paginationOptions);
     // Build where clause for optimized filtering
     const whereClause = {
         is_deleted: false,
+        shop_id: user.shop_id,
     };
     // Add search filter (searches in category name)
     if (search) {
@@ -136,12 +137,13 @@ const CreateCategory = (payload, user, file) => __awaiter(void 0, void 0, void 0
     });
     return Object.assign(Object.assign({}, category), { product_count: category._count.products, _count: undefined });
 });
-const UpdateCategory = (id, payload, file) => __awaiter(void 0, void 0, void 0, function* () {
+const UpdateCategory = (id, payload, file, user) => __awaiter(void 0, void 0, void 0, function* () {
     // Check if category exists and is not deleted
     const existingCategory = yield prisma_1.default.category.findFirst({
         where: {
             id,
             is_deleted: false,
+            shop_id: user === null || user === void 0 ? void 0 : user.shop_id,
         },
     });
     if (!existingCategory) {
@@ -205,12 +207,13 @@ const UpdateCategory = (id, payload, file) => __awaiter(void 0, void 0, void 0, 
     });
     return Object.assign(Object.assign({}, updatedCategory), { product_count: updatedCategory._count.products, _count: undefined });
 });
-const UpdateCategoryImage = (id, file) => __awaiter(void 0, void 0, void 0, function* () {
+const UpdateCategoryImage = (id, file, user) => __awaiter(void 0, void 0, void 0, function* () {
     // Check if category exists and is not deleted
     const existingCategory = yield prisma_1.default.category.findFirst({
         where: {
             id,
             is_deleted: false,
+            shop_id: user === null || user === void 0 ? void 0 : user.shop_id,
         },
     });
     if (!existingCategory) {
@@ -253,12 +256,13 @@ const UpdateCategoryImage = (id, file) => __awaiter(void 0, void 0, void 0, func
         throw new AppError_1.default(http_status_1.default.BAD_REQUEST, 'Failed to update category image');
     }
 });
-const DeleteCategoryImage = (id) => __awaiter(void 0, void 0, void 0, function* () {
+const DeleteCategoryImage = (id, user) => __awaiter(void 0, void 0, void 0, function* () {
     // Check if category exists and is not deleted
     const existingCategory = yield prisma_1.default.category.findFirst({
         where: {
             id,
             is_deleted: false,
+            shop_id: user === null || user === void 0 ? void 0 : user.shop_id,
         },
     });
     if (!existingCategory) {
@@ -298,12 +302,13 @@ const DeleteCategoryImage = (id) => __awaiter(void 0, void 0, void 0, function* 
         throw new AppError_1.default(http_status_1.default.BAD_REQUEST, 'Failed to delete category image');
     }
 });
-const DeleteCategory = (id) => __awaiter(void 0, void 0, void 0, function* () {
+const DeleteCategory = (id, user) => __awaiter(void 0, void 0, void 0, function* () {
     // Check if category exists and is not already deleted
     const existingCategory = yield prisma_1.default.category.findFirst({
         where: {
             id,
             is_deleted: false,
+            shop_id: user === null || user === void 0 ? void 0 : user.shop_id,
         },
     });
     if (!existingCategory) {

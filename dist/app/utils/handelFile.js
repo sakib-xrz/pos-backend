@@ -23,11 +23,6 @@ cloudinary_1.v2.config({
     api_key: index_1.default.cloudinary.api_key,
     api_secret: index_1.default.cloudinary.api_secret,
 });
-console.log('Cloudinary configuration:', {
-    cloud_name: index_1.default.cloudinary.cloud_name,
-    api_key: index_1.default.cloudinary.api_key,
-    api_secret: index_1.default.cloudinary.api_secret,
-});
 // Allowed file types
 const allowedTypes = /jpeg|jpg|png|gif|pdf|doc|docx/;
 // Multer memory storage (for serverless compatibility)

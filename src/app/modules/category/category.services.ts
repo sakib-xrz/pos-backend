@@ -23,7 +23,7 @@ interface UpdateCategoryPayload {
   name?: string;
 }
 
-const GetCategories = async (query: GetCategoriesQuery) => {
+const GetCategories = async (query: GetCategoriesQuery, user: JwtPayload) => {
   const { search, ...paginationOptions } = query;
 
   // Calculate pagination with your utility
@@ -33,6 +33,7 @@ const GetCategories = async (query: GetCategoriesQuery) => {
   // Build where clause for optimized filtering
   const whereClause: Prisma.CategoryWhereInput = {
     is_deleted: false,
+    shop_id: user.shop_id,
   };
 
   // Add search filter (searches in category name)
@@ -172,12 +173,14 @@ const UpdateCategory = async (
   id: string,
   payload: UpdateCategoryPayload,
   file?: Express.Multer.File,
+  user?: JwtPayload,
 ) => {
   // Check if category exists and is not deleted
   const existingCategory = await prisma.category.findFirst({
     where: {
       id,
       is_deleted: false,
+      shop_id: user?.shop_id,
     },
   });
 
@@ -265,12 +268,17 @@ const UpdateCategory = async (
   };
 };
 
-const UpdateCategoryImage = async (id: string, file: Express.Multer.File) => {
+const UpdateCategoryImage = async (
+  id: string,
+  file: Express.Multer.File,
+  user?: JwtPayload,
+) => {
   // Check if category exists and is not deleted
   const existingCategory = await prisma.category.findFirst({
     where: {
       id,
       is_deleted: false,
+      shop_id: user?.shop_id,
     },
   });
 
@@ -328,12 +336,13 @@ const UpdateCategoryImage = async (id: string, file: Express.Multer.File) => {
   }
 };
 
-const DeleteCategoryImage = async (id: string) => {
+const DeleteCategoryImage = async (id: string, user?: JwtPayload) => {
   // Check if category exists and is not deleted
   const existingCategory = await prisma.category.findFirst({
     where: {
       id,
       is_deleted: false,
+      shop_id: user?.shop_id,
     },
   });
 
@@ -391,12 +400,13 @@ const DeleteCategoryImage = async (id: string) => {
   }
 };
 
-const DeleteCategory = async (id: string) => {
+const DeleteCategory = async (id: string, user?: JwtPayload) => {
   // Check if category exists and is not already deleted
   const existingCategory = await prisma.category.findFirst({
     where: {
       id,
       is_deleted: false,
+      shop_id: user?.shop_id,
     },
   });
 

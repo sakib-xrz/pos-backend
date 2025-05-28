@@ -9,7 +9,7 @@ import { upload } from '../../utils/handelFile';
 const router = express.Router();
 
 // GET /api/categories - Get categories with search and pagination
-router.get('/', CategoryController.GetCategories);
+router.get('/', auth(Role.ADMIN, Role.STAFF), CategoryController.GetCategories);
 
 // POST /api/categories - Create new category with image upload (Admin only)
 router.post(

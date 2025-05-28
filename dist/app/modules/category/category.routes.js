@@ -13,7 +13,7 @@ const client_1 = require("@prisma/client");
 const handelFile_1 = require("../../utils/handelFile");
 const router = express_1.default.Router();
 // GET /api/categories - Get categories with search and pagination
-router.get('/', category_controller_1.default.GetCategories);
+router.get('/', (0, auth_1.default)(client_1.Role.ADMIN, client_1.Role.STAFF), category_controller_1.default.GetCategories);
 // POST /api/categories - Create new category with image upload (Admin only)
 router.post('/', (0, auth_1.default)(client_1.Role.ADMIN), handelFile_1.upload.single('image'), // Handle single image upload
 (0, validateRequest_1.default)(category_validation_1.default.CreateCategorySchema), category_controller_1.default.CreateCategory);

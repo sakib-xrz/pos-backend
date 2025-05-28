@@ -5,7 +5,7 @@ import CategoryService from './category.services';
 import AppError from '../../errors/AppError';
 
 const GetCategories = catchAsync(async (req, res) => {
-  const result = await CategoryService.GetCategories(req.query);
+  const result = await CategoryService.GetCategories(req.query, req.user);
 
   sendResponse(res, {
     success: true,
@@ -38,7 +38,12 @@ const CreateCategory = catchAsync(async (req, res) => {
 
 const UpdateCategory = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const result = await CategoryService.UpdateCategory(id, req.body, req.file);
+  const result = await CategoryService.UpdateCategory(
+    id,
+    req.body,
+    req.file,
+    req.user,
+  );
 
   sendResponse(res, {
     success: true,
@@ -59,7 +64,11 @@ const UpdateCategoryImage = catchAsync(async (req, res) => {
     });
   }
 
-  const result = await CategoryService.UpdateCategoryImage(id, req.file);
+  const result = await CategoryService.UpdateCategoryImage(
+    id,
+    req.file,
+    req.user,
+  );
 
   sendResponse(res, {
     success: true,
@@ -71,7 +80,7 @@ const UpdateCategoryImage = catchAsync(async (req, res) => {
 
 const DeleteCategoryImage = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const result = await CategoryService.DeleteCategoryImage(id);
+  const result = await CategoryService.DeleteCategoryImage(id, req.user);
 
   sendResponse(res, {
     success: true,
@@ -83,7 +92,7 @@ const DeleteCategoryImage = catchAsync(async (req, res) => {
 
 const DeleteCategory = catchAsync(async (req, res) => {
   const { id } = req.params;
-  await CategoryService.DeleteCategory(id);
+  await CategoryService.DeleteCategory(id, req.user);
 
   sendResponse(res, {
     success: true,

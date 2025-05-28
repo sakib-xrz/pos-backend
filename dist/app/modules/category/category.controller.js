@@ -18,7 +18,7 @@ const sendResponse_1 = __importDefault(require("../../utils/sendResponse"));
 const category_services_1 = __importDefault(require("./category.services"));
 const AppError_1 = __importDefault(require("../../errors/AppError"));
 const GetCategories = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield category_services_1.default.GetCategories(req.query);
+    const result = yield category_services_1.default.GetCategories(req.query, req.user);
     (0, sendResponse_1.default)(res, {
         success: true,
         statusCode: http_status_1.default.OK,
@@ -42,7 +42,7 @@ const CreateCategory = (0, catchAsync_1.default)((req, res) => __awaiter(void 0,
 }));
 const UpdateCategory = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
-    const result = yield category_services_1.default.UpdateCategory(id, req.body, req.file);
+    const result = yield category_services_1.default.UpdateCategory(id, req.body, req.file, req.user);
     (0, sendResponse_1.default)(res, {
         success: true,
         statusCode: http_status_1.default.OK,
@@ -59,7 +59,7 @@ const UpdateCategoryImage = (0, catchAsync_1.default)((req, res) => __awaiter(vo
             message: 'Category image is required',
         });
     }
-    const result = yield category_services_1.default.UpdateCategoryImage(id, req.file);
+    const result = yield category_services_1.default.UpdateCategoryImage(id, req.file, req.user);
     (0, sendResponse_1.default)(res, {
         success: true,
         statusCode: http_status_1.default.OK,
@@ -69,7 +69,7 @@ const UpdateCategoryImage = (0, catchAsync_1.default)((req, res) => __awaiter(vo
 }));
 const DeleteCategoryImage = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
-    const result = yield category_services_1.default.DeleteCategoryImage(id);
+    const result = yield category_services_1.default.DeleteCategoryImage(id, req.user);
     (0, sendResponse_1.default)(res, {
         success: true,
         statusCode: http_status_1.default.OK,
@@ -79,7 +79,7 @@ const DeleteCategoryImage = (0, catchAsync_1.default)((req, res) => __awaiter(vo
 }));
 const DeleteCategory = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
-    yield category_services_1.default.DeleteCategory(id);
+    yield category_services_1.default.DeleteCategory(id, req.user);
     (0, sendResponse_1.default)(res, {
         success: true,
         statusCode: http_status_1.default.OK,

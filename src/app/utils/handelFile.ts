@@ -15,12 +15,6 @@ cloudinary.config({
   api_secret: config.cloudinary.api_secret,
 });
 
-console.log('Cloudinary configuration:', {
-  cloud_name: config.cloudinary.cloud_name,
-  api_key: config.cloudinary.api_key,
-  api_secret: config.cloudinary.api_secret,
-});
-
 // Allowed file types
 const allowedTypes = /jpeg|jpg|png|gif|pdf|doc|docx/;
 
