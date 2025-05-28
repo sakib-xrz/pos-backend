@@ -17,7 +17,8 @@ const catchAsync_1 = __importDefault(require("../../utils/catchAsync"));
 const sendResponse_1 = __importDefault(require("../../utils/sendResponse"));
 const order_services_1 = __importDefault(require("./order.services"));
 const GetOrders = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield order_services_1.default.GetOrders(req.query);
+    var _a;
+    const result = yield order_services_1.default.GetOrders(req.query, (_a = req.user) === null || _a === void 0 ? void 0 : _a.shop_id);
     (0, sendResponse_1.default)(res, {
         success: true,
         statusCode: http_status_1.default.OK,
@@ -27,8 +28,9 @@ const GetOrders = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void
     });
 }));
 const GetOrderById = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     const { id } = req.params;
-    const result = yield order_services_1.default.GetOrderById(id);
+    const result = yield order_services_1.default.GetOrderById(id, (_a = req.user) === null || _a === void 0 ? void 0 : _a.shop_id);
     (0, sendResponse_1.default)(res, {
         success: true,
         statusCode: http_status_1.default.OK,
@@ -46,9 +48,10 @@ const CreateOrder = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, vo
     });
 }));
 const UpdateOrderStatus = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     const { id } = req.params;
     const { status } = req.body;
-    const result = yield order_services_1.default.UpdateOrderStatus(id, status);
+    const result = yield order_services_1.default.UpdateOrderStatus(id, status, (_a = req.user) === null || _a === void 0 ? void 0 : _a.shop_id);
     (0, sendResponse_1.default)(res, {
         success: true,
         statusCode: http_status_1.default.OK,

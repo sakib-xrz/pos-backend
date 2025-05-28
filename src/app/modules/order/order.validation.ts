@@ -29,11 +29,6 @@ const CreateOrderSchema = z.object({
       required_error: 'Payment type is required',
       invalid_type_error: 'Payment type must be either CASH or CARD',
     }),
-    table_number: z
-      .string({
-        invalid_type_error: 'Table number must be a string',
-      })
-      .optional(),
     note: z
       .string({
         invalid_type_error: 'Note must be a string',

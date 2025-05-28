@@ -20,6 +20,10 @@ router.patch(
   AuthController.ChangePassword,
 );
 
-router.get('/me', auth(Role.ADMIN, Role.STAFF), AuthController.GetMyProfile);
+router.get(
+  '/me',
+  auth(Role.SUPER_ADMIN, Role.ADMIN, Role.STAFF),
+  AuthController.GetMyProfile,
+);
 
 export const AuthRoutes = router;

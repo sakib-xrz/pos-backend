@@ -34,7 +34,7 @@ const generateOrderNumber = (): string => {
   return alphanumeric.substring(0, 6).toUpperCase();
 };
 
-const GetOrders = async (query: GetOrdersQuery) => {
+const GetOrders = async (query: GetOrdersQuery, userShopId?: string) => {
   const { status, payment_type, date_from, date_to, ...paginationOptions } =
     query;
 
@@ -43,7 +43,9 @@ const GetOrders = async (query: GetOrdersQuery) => {
     calculatePagination(paginationOptions);
 
   // Build where clause for optimized filtering
-  const whereClause: Prisma.OrderWhereInput = {};
+  const whereClause: Prisma.OrderWhereInput = {
+    shop_id: userShopId,
+  };
 
   // Add status filter
   if (status) {
@@ -125,9 +127,9 @@ const GetOrders = async (query: GetOrdersQuery) => {
   return { orders, meta };
 };
 
-const GetOrderById = async (id: string) => {
+const GetOrderById = async (id: string, userShopId?: string) => {
   const order = await prisma.order.findUnique({
-    where: { id },
+    where: { id, shop_id: userShopId },
     include: {
       user: {
         select: {
@@ -245,13 +247,17 @@ const CreateOrder = async (
   });
 
   // Return order with details
-  return await GetOrderById(order.id);
+  return await GetOrderById(order.id, user.shop_id);
 };
 
-const UpdateOrderStatus = async (id: string, status: OrderStatus) => {
+const UpdateOrderStatus = async (
+  id: string,
+  status: OrderStatus,
+  userShopId?: string,
+) => {
   // Check if order exists
   const existingOrder = await prisma.order.findUnique({
-    where: { id },
+    where: { id, shop_id: userShopId },
   });
 
   if (!existingOrder) {
@@ -274,11 +280,11 @@ const UpdateOrderStatus = async (id: string, status: OrderStatus) => {
   }
 
   const updatedOrder = await prisma.order.update({
-    where: { id },
+    where: { id, shop_id: userShopId },
     data: { status },
   });
 
-  return await GetOrderById(updatedOrder.id);
+  return await GetOrderById(updatedOrder.id, userShopId);
 };
 
 const OrderService = {

@@ -4,7 +4,7 @@ import sendResponse from '../../utils/sendResponse';
 import OrderService from './order.services';
 
 const GetOrders = catchAsync(async (req, res) => {
-  const result = await OrderService.GetOrders(req.query);
+  const result = await OrderService.GetOrders(req.query, req.user?.shop_id);
 
   sendResponse(res, {
     success: true,
@@ -17,7 +17,7 @@ const GetOrders = catchAsync(async (req, res) => {
 
 const GetOrderById = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const result = await OrderService.GetOrderById(id);
+  const result = await OrderService.GetOrderById(id, req.user?.shop_id);
 
   sendResponse(res, {
     success: true,
@@ -45,7 +45,11 @@ const CreateOrder = catchAsync(async (req, res) => {
 const UpdateOrderStatus = catchAsync(async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
-  const result = await OrderService.UpdateOrderStatus(id, status);
+  const result = await OrderService.UpdateOrderStatus(
+    id,
+    status,
+    req.user?.shop_id,
+  );
 
   sendResponse(res, {
     success: true,

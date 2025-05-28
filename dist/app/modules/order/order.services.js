@@ -34,12 +34,14 @@ const generateOrderNumber = () => {
     const alphanumeric = uuid.replace(/[^a-z0-9]/gi, '');
     return alphanumeric.substring(0, 6).toUpperCase();
 };
-const GetOrders = (query) => __awaiter(void 0, void 0, void 0, function* () {
+const GetOrders = (query, userShopId) => __awaiter(void 0, void 0, void 0, function* () {
     const { status, payment_type, date_from, date_to } = query, paginationOptions = __rest(query, ["status", "payment_type", "date_from", "date_to"]);
     // Calculate pagination with your utility
     const { page, limit, skip, sort_by, sort_order } = (0, pagination_1.default)(paginationOptions);
     // Build where clause for optimized filtering
-    const whereClause = {};
+    const whereClause = {
+        shop_id: userShopId,
+    };
     // Add status filter
     if (status) {
         whereClause.status = status;
@@ -108,9 +110,9 @@ const GetOrders = (query) => __awaiter(void 0, void 0, void 0, function* () {
     };
     return { orders, meta };
 });
-const GetOrderById = (id) => __awaiter(void 0, void 0, void 0, function* () {
+const GetOrderById = (id, userShopId) => __awaiter(void 0, void 0, void 0, function* () {
     const order = yield prisma_1.default.order.findUnique({
-        where: { id },
+        where: { id, shop_id: userShopId },
         include: {
             user: {
                 select: {
@@ -207,12 +209,12 @@ const CreateOrder = (payload, userId, user) => __awaiter(void 0, void 0, void 0,
         return newOrder;
     }));
     // Return order with details
-    return yield GetOrderById(order.id);
+    return yield GetOrderById(order.id, user.shop_id);
 });
-const UpdateOrderStatus = (id, status) => __awaiter(void 0, void 0, void 0, function* () {
+const UpdateOrderStatus = (id, status, userShopId) => __awaiter(void 0, void 0, void 0, function* () {
     // Check if order exists
     const existingOrder = yield prisma_1.default.order.findUnique({
-        where: { id },
+        where: { id, shop_id: userShopId },
     });
     if (!existingOrder) {
         throw new AppError_1.default(http_status_1.default.NOT_FOUND, 'Order not found');
@@ -226,10 +228,10 @@ const UpdateOrderStatus = (id, status) => __awaiter(void 0, void 0, void 0, func
         throw new AppError_1.default(http_status_1.default.BAD_REQUEST, 'Cannot reopen a paid order');
     }
     const updatedOrder = yield prisma_1.default.order.update({
-        where: { id },
+        where: { id, shop_id: userShopId },
         data: { status },
     });
-    return yield GetOrderById(updatedOrder.id);
+    return yield GetOrderById(updatedOrder.id, userShopId);
 });
 const OrderService = {
     GetOrders,
