@@ -9,6 +9,7 @@ import calculatePagination, {
 import { JwtPayload } from 'jsonwebtoken';
 
 interface GetOrdersQuery extends IPaginationOptions {
+  search?: string;
   status?: OrderStatus;
   payment_type?: PaymentType;
   date_from?: string;
@@ -35,8 +36,14 @@ const generateOrderNumber = (): string => {
 };
 
 const GetOrders = async (query: GetOrdersQuery, userShopId?: string) => {
-  const { status, payment_type, date_from, date_to, ...paginationOptions } =
-    query;
+  const {
+    search,
+    status,
+    payment_type,
+    date_from,
+    date_to,
+    ...paginationOptions
+  } = query;
 
   // Calculate pagination with your utility
   const { page, limit, skip, sort_by, sort_order } =
@@ -46,6 +53,14 @@ const GetOrders = async (query: GetOrdersQuery, userShopId?: string) => {
   const whereClause: Prisma.OrderWhereInput = {
     shop_id: userShopId,
   };
+
+  // Add search filter
+  if (search) {
+    whereClause.order_number = {
+      contains: search,
+      mode: 'insensitive',
+    };
+  }
 
   // Add status filter
   if (status) {

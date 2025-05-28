@@ -35,13 +35,20 @@ const generateOrderNumber = () => {
     return alphanumeric.substring(0, 6).toUpperCase();
 };
 const GetOrders = (query, userShopId) => __awaiter(void 0, void 0, void 0, function* () {
-    const { status, payment_type, date_from, date_to } = query, paginationOptions = __rest(query, ["status", "payment_type", "date_from", "date_to"]);
+    const { search, status, payment_type, date_from, date_to } = query, paginationOptions = __rest(query, ["search", "status", "payment_type", "date_from", "date_to"]);
     // Calculate pagination with your utility
     const { page, limit, skip, sort_by, sort_order } = (0, pagination_1.default)(paginationOptions);
     // Build where clause for optimized filtering
     const whereClause = {
         shop_id: userShopId,
     };
+    // Add search filter
+    if (search) {
+        whereClause.order_number = {
+            contains: search,
+            mode: 'insensitive',
+        };
+    }
     // Add status filter
     if (status) {
         whereClause.status = status;
