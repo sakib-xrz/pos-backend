@@ -42,7 +42,11 @@ const CreateProduct = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, 
 }));
 const UpdateProduct = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
-    const result = yield product_services_1.default.UpdateProduct(id, req.body);
+    // Check if super admin is trying to update product
+    if (req.user.role === 'SUPER_ADMIN') {
+        throw new AppError_1.default(http_status_1.default.FORBIDDEN, 'Super admin cannot update products');
+    }
+    const result = yield product_services_1.default.UpdateProduct(id, req.body, req.file, req.user);
     (0, sendResponse_1.default)(res, {
         success: true,
         statusCode: http_status_1.default.OK,

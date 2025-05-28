@@ -29,7 +29,7 @@ const prisma_1 = __importDefault(require("../../utils/prisma"));
 const handelFile_1 = require("../../utils/handelFile");
 const pagination_1 = __importDefault(require("../../utils/pagination"));
 const GetProducts = (query, userShopId) => __awaiter(void 0, void 0, void 0, function* () {
-    const { search, category_id, availability } = query, paginationOptions = __rest(query, ["search", "category_id", "availability"]);
+    const { search, category_id, is_available } = query, paginationOptions = __rest(query, ["search", "category_id", "is_available"]);
     const { page, limit, skip, sort_by, sort_order } = (0, pagination_1.default)(paginationOptions);
     const whereClause = {
         is_deleted: false,
@@ -50,8 +50,13 @@ const GetProducts = (query, userShopId) => __awaiter(void 0, void 0, void 0, fun
         whereClause.category_id = category_id;
     }
     // Add availability filter
-    if (availability !== undefined) {
-        whereClause.is_available = availability;
+    if (is_available !== undefined) {
+        whereClause.is_available =
+            is_available === 'true'
+                ? true
+                : is_available === 'false'
+                    ? false
+                    : undefined;
     }
     // Build dynamic order by clause
     const orderBy = [];
@@ -101,7 +106,6 @@ const GetProducts = (query, userShopId) => __awaiter(void 0, void 0, void 0, fun
     return { products, meta };
 });
 const CreateProduct = (payload, shopId, file) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
     // Verify category exists, is not deleted, and belongs to the same shop
     const category = yield prisma_1.default.category.findFirst({
         where: {
@@ -135,7 +139,7 @@ const CreateProduct = (payload, shopId, file) => __awaiter(void 0, void 0, void 
             image: imageUrl,
             category_id: payload.category_id,
             shop_id: shopId,
-            is_available: (_a = payload.is_available) !== null && _a !== void 0 ? _a : true,
+            is_available: payload.is_available === 'true' ? true : false,
         },
         include: {
             category: {
@@ -156,16 +160,36 @@ const CreateProduct = (payload, shopId, file) => __awaiter(void 0, void 0, void 
     });
     return product;
 });
-const UpdateProduct = (id, payload) => __awaiter(void 0, void 0, void 0, function* () {
+const UpdateProduct = (id, payload, file, user) => __awaiter(void 0, void 0, void 0, function* () {
     // Check if product exists and is not deleted
     const existingProduct = yield prisma_1.default.product.findFirst({
         where: {
             id,
             is_deleted: false,
+            shop_id: user === null || user === void 0 ? void 0 : user.shop_id,
         },
     });
     if (!existingProduct) {
         throw new AppError_1.default(http_status_1.default.NOT_FOUND, 'Product not found or has been deleted');
+    }
+    // Check if another product with same name exists (if name is being updated)
+    if (payload.name) {
+        const productWithSameName = yield prisma_1.default.product.findFirst({
+            where: {
+                name: {
+                    equals: payload.name,
+                    mode: 'insensitive',
+                },
+                id: {
+                    not: id, // Exclude current product
+                },
+                is_deleted: false,
+                shop_id: user === null || user === void 0 ? void 0 : user.shop_id,
+            },
+        });
+        if (productWithSameName) {
+            throw new AppError_1.default(http_status_1.default.CONFLICT, 'Product with this name already exists');
+        }
     }
     // If category_id is being updated, verify the new category exists
     if (payload.category_id) {
@@ -173,15 +197,39 @@ const UpdateProduct = (id, payload) => __awaiter(void 0, void 0, void 0, functio
             where: {
                 id: payload.category_id,
                 is_deleted: false,
+                shop_id: user === null || user === void 0 ? void 0 : user.shop_id,
             },
         });
         if (!category) {
             throw new AppError_1.default(http_status_1.default.NOT_FOUND, 'Category not found or has been deleted');
         }
     }
+    let imageUrl = existingProduct.image || undefined;
+    // Handle image upload if file is provided
+    if (file) {
+        try {
+            // Delete old image if exists
+            if (existingProduct.image) {
+                const publicId = (0, handelFile_1.extractPublicIdFromUrl)(existingProduct.image);
+                if (publicId) {
+                    yield (0, handelFile_1.deleteFromCloudinary)([publicId]);
+                }
+            }
+            // Upload new image
+            const uploadResult = yield (0, handelFile_1.uploadToCloudinary)(file, {
+                folder: 'products',
+                public_id: `product_${id}_${Date.now()}`,
+            });
+            imageUrl = uploadResult === null || uploadResult === void 0 ? void 0 : uploadResult.secure_url;
+        }
+        catch (error) {
+            console.log('Error from cloudinary while updating product image', error);
+            throw new AppError_1.default(http_status_1.default.BAD_REQUEST, 'Failed to upload product image');
+        }
+    }
     const updatedProduct = yield prisma_1.default.product.update({
         where: { id },
-        data: Object.assign({}, payload),
+        data: Object.assign(Object.assign({}, payload), { image: imageUrl, is_available: payload.is_available === 'true' }),
         include: {
             category: {
                 select: {

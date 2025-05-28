@@ -13,7 +13,7 @@ const client_1 = require("@prisma/client");
 const handelFile_1 = require("../../utils/handelFile");
 const router = express_1.default.Router();
 // GET /api/products - Get products with filters, search, and pagination
-router.get('/', product_controller_1.default.GetProducts);
+router.get('/', (0, auth_1.default)(client_1.Role.ADMIN, client_1.Role.STAFF), product_controller_1.default.GetProducts);
 // POST /api/products - Create new product with image upload (Admin only)
 router.post('/', (0, auth_1.default)(client_1.Role.ADMIN), handelFile_1.upload.single('image'), // Handle single image upload
 (0, validateRequest_1.default)(product_validation_1.default.CreateProductSchema), product_controller_1.default.CreateProduct);
