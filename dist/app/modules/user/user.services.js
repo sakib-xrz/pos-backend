@@ -113,9 +113,9 @@ const GetUsers = (query, userShopId) => __awaiter(void 0, void 0, void 0, functi
     };
     return { users: usersWithCounts, meta };
 });
-const CreateUser = (payload) => __awaiter(void 0, void 0, void 0, function* () {
+const CreateUser = (payload, userShopId) => __awaiter(void 0, void 0, void 0, function* () {
     // Prevent creation of SUPER_ADMIN by non-super-admin users
-    if (payload.role === 'SUPER_ADMIN' && payload.shop_id) {
+    if (payload.role === 'SUPER_ADMIN' && userShopId) {
         throw new AppError_1.default(http_status_1.default.FORBIDDEN, 'Cannot create super admin user in shop context');
     }
     // Check if user with same email already exists
@@ -139,7 +139,7 @@ const CreateUser = (payload) => __awaiter(void 0, void 0, void 0, function* () {
             email: payload.email,
             password: hashedPassword,
             role: payload.role,
-            shop_id: payload.shop_id,
+            shop_id: userShopId,
         },
         select: {
             id: true,
@@ -159,12 +159,13 @@ const CreateUser = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     });
     return user;
 });
-const UpdateUser = (id, payload) => __awaiter(void 0, void 0, void 0, function* () {
+const UpdateUser = (id, payload, userShopId) => __awaiter(void 0, void 0, void 0, function* () {
     // Check if user exists and is not deleted
     const existingUser = yield prisma_1.default.user.findFirst({
         where: {
             id,
             is_deleted: false,
+            shop_id: userShopId,
         },
     });
     if (!existingUser) {
@@ -182,6 +183,7 @@ const UpdateUser = (id, payload) => __awaiter(void 0, void 0, void 0, function* 
                     not: id, // Exclude current user
                 },
                 is_deleted: false,
+                shop_id: userShopId,
             },
         });
         if (userWithSameEmail) {
@@ -189,7 +191,7 @@ const UpdateUser = (id, payload) => __awaiter(void 0, void 0, void 0, function* 
         }
     }
     const updatedUser = yield prisma_1.default.user.update({
-        where: { id },
+        where: { id, shop_id: userShopId },
         data: payload,
         select: {
             id: true,
@@ -202,12 +204,13 @@ const UpdateUser = (id, payload) => __awaiter(void 0, void 0, void 0, function* 
     });
     return updatedUser;
 });
-const ResetPassword = (id, newPassword) => __awaiter(void 0, void 0, void 0, function* () {
+const ResetPassword = (id, newPassword, userShopId) => __awaiter(void 0, void 0, void 0, function* () {
     // Check if user exists and is not deleted
     const existingUser = yield prisma_1.default.user.findFirst({
         where: {
             id,
             is_deleted: false,
+            shop_id: userShopId,
         },
     });
     if (!existingUser) {
@@ -216,18 +219,19 @@ const ResetPassword = (id, newPassword) => __awaiter(void 0, void 0, void 0, fun
     // Hash new password
     const hashedPassword = yield bcrypt_1.default.hash(newPassword, Number(config_1.default.bcrypt_salt_rounds));
     yield prisma_1.default.user.update({
-        where: { id },
+        where: { id, shop_id: userShopId },
         data: {
             password: hashedPassword,
         },
     });
 });
-const DeleteUser = (id) => __awaiter(void 0, void 0, void 0, function* () {
+const DeleteUser = (id, userShopId) => __awaiter(void 0, void 0, void 0, function* () {
     // Check if user exists and is not already deleted
     const existingUser = yield prisma_1.default.user.findFirst({
         where: {
             id,
             is_deleted: false,
+            shop_id: userShopId,
         },
     });
     if (!existingUser) {
@@ -237,6 +241,7 @@ const DeleteUser = (id) => __awaiter(void 0, void 0, void 0, function* () {
     const orderCount = yield prisma_1.default.order.count({
         where: {
             created_by: id,
+            shop_id: userShopId,
         },
     });
     if (orderCount > 0) {
@@ -244,7 +249,7 @@ const DeleteUser = (id) => __awaiter(void 0, void 0, void 0, function* () {
     }
     // Soft delete the user
     yield prisma_1.default.user.update({
-        where: { id },
+        where: { id, shop_id: userShopId },
         data: {
             is_deleted: true,
         },

@@ -1,7 +1,7 @@
 import prisma from '../../utils/prisma';
 
 // Get summary statistics
-const GetSummaryStats = async () => {
+const GetSummaryStats = async (userShopId?: string) => {
   const now = new Date();
   const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
@@ -26,6 +26,7 @@ const GetSummaryStats = async () => {
     prisma.order.aggregate({
       where: {
         status: 'PAID',
+        shop_id: userShopId,
         created_at: {
           gte: startOfThisMonth,
         },
@@ -42,6 +43,7 @@ const GetSummaryStats = async () => {
     prisma.order.aggregate({
       where: {
         status: 'PAID',
+        shop_id: userShopId,
         created_at: {
           gte: startOfLastMonth,
           lte: endOfLastMonth,
@@ -60,6 +62,7 @@ const GetSummaryStats = async () => {
       where: {
         is_deleted: false,
         role: 'STAFF',
+        shop_id: userShopId,
         created_at: {
           lte: now,
         },
@@ -71,6 +74,7 @@ const GetSummaryStats = async () => {
       where: {
         is_deleted: false,
         role: 'STAFF',
+        shop_id: userShopId,
         created_at: {
           lte: endOfLastMonth,
         },
@@ -129,7 +133,7 @@ const GetSummaryStats = async () => {
 };
 
 // Get weekly sales data for the current week
-const GetWeeklySales = async () => {
+const GetWeeklySales = async (userShopId?: string) => {
   const now = new Date();
   const startOfWeek = new Date(now);
   const dayOfWeek = now.getDay();
@@ -158,6 +162,7 @@ const GetWeeklySales = async () => {
       COALESCE(SUM(total_amount), 0) as total
     FROM "order"
     WHERE status = 'PAID'
+      AND shop_id = ${userShopId}
       AND created_at >= ${startOfWeek}
       AND created_at <= ${endOfWeek}
     GROUP BY EXTRACT(DOW FROM created_at)
@@ -186,7 +191,7 @@ const GetWeeklySales = async () => {
 };
 
 // Get sales by category (pie chart data)
-const GetCategorySales = async () => {
+const GetCategorySales = async (userShopId?: string) => {
   const categorySales = await prisma.$queryRaw<
     { category_name: string; total_sales: number }[]
   >`
@@ -198,6 +203,7 @@ const GetCategorySales = async () => {
     LEFT JOIN order_item oi ON oi.product_id = p.id
     LEFT JOIN "order" o ON o.id = oi.order_id AND o.status = 'PAID'
     WHERE c.is_deleted = false
+      AND c.shop_id = ${userShopId}
     GROUP BY c.id, c.name
     ORDER BY total_sales DESC
   `;

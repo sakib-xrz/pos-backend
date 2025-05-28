@@ -3,8 +3,8 @@ import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
 import StatsService from './stats.services';
 
-const GetSummaryStats = catchAsync(async (_req, res) => {
-  const result = await StatsService.GetSummaryStats();
+const GetSummaryStats = catchAsync(async (req, res) => {
+  const result = await StatsService.GetSummaryStats(req.user?.shop_id);
 
   sendResponse(res, {
     success: true,
@@ -14,8 +14,8 @@ const GetSummaryStats = catchAsync(async (_req, res) => {
   });
 });
 
-const GetWeeklySales = catchAsync(async (_req, res) => {
-  const result = await StatsService.GetWeeklySales();
+const GetWeeklySales = catchAsync(async (req, res) => {
+  const result = await StatsService.GetWeeklySales(req.user?.shop_id);
 
   sendResponse(res, {
     success: true,
@@ -25,8 +25,8 @@ const GetWeeklySales = catchAsync(async (_req, res) => {
   });
 });
 
-const GetCategorySales = catchAsync(async (_req, res) => {
-  const result = await StatsService.GetCategorySales();
+const GetCategorySales = catchAsync(async (req, res) => {
+  const result = await StatsService.GetCategorySales(req.user?.shop_id);
 
   sendResponse(res, {
     success: true,

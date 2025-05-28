@@ -14,7 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const prisma_1 = __importDefault(require("../../utils/prisma"));
 // Get summary statistics
-const GetSummaryStats = () => __awaiter(void 0, void 0, void 0, function* () {
+const GetSummaryStats = (userShopId) => __awaiter(void 0, void 0, void 0, function* () {
     const now = new Date();
     const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
@@ -25,6 +25,7 @@ const GetSummaryStats = () => __awaiter(void 0, void 0, void 0, function* () {
         prisma_1.default.order.aggregate({
             where: {
                 status: 'PAID',
+                shop_id: userShopId,
                 created_at: {
                     gte: startOfThisMonth,
                 },
@@ -40,6 +41,7 @@ const GetSummaryStats = () => __awaiter(void 0, void 0, void 0, function* () {
         prisma_1.default.order.aggregate({
             where: {
                 status: 'PAID',
+                shop_id: userShopId,
                 created_at: {
                     gte: startOfLastMonth,
                     lte: endOfLastMonth,
@@ -57,6 +59,7 @@ const GetSummaryStats = () => __awaiter(void 0, void 0, void 0, function* () {
             where: {
                 is_deleted: false,
                 role: 'STAFF',
+                shop_id: userShopId,
                 created_at: {
                     lte: now,
                 },
@@ -67,6 +70,7 @@ const GetSummaryStats = () => __awaiter(void 0, void 0, void 0, function* () {
             where: {
                 is_deleted: false,
                 role: 'STAFF',
+                shop_id: userShopId,
                 created_at: {
                     lte: endOfLastMonth,
                 },
@@ -111,7 +115,7 @@ const GetSummaryStats = () => __awaiter(void 0, void 0, void 0, function* () {
     };
 });
 // Get weekly sales data for the current week
-const GetWeeklySales = () => __awaiter(void 0, void 0, void 0, function* () {
+const GetWeeklySales = (userShopId) => __awaiter(void 0, void 0, void 0, function* () {
     const now = new Date();
     const startOfWeek = new Date(now);
     const dayOfWeek = now.getDay();
@@ -136,6 +140,7 @@ const GetWeeklySales = () => __awaiter(void 0, void 0, void 0, function* () {
       COALESCE(SUM(total_amount), 0) as total
     FROM "order"
     WHERE status = 'PAID'
+      AND shop_id = ${userShopId}
       AND created_at >= ${startOfWeek}
       AND created_at <= ${endOfWeek}
     GROUP BY EXTRACT(DOW FROM created_at)
@@ -161,7 +166,7 @@ const GetWeeklySales = () => __awaiter(void 0, void 0, void 0, function* () {
     return salesByDay;
 });
 // Get sales by category (pie chart data)
-const GetCategorySales = () => __awaiter(void 0, void 0, void 0, function* () {
+const GetCategorySales = (userShopId) => __awaiter(void 0, void 0, void 0, function* () {
     const categorySales = yield prisma_1.default.$queryRaw `
     SELECT 
       c.name as category_name,
@@ -171,6 +176,7 @@ const GetCategorySales = () => __awaiter(void 0, void 0, void 0, function* () {
     LEFT JOIN order_item oi ON oi.product_id = p.id
     LEFT JOIN "order" o ON o.id = oi.order_id AND o.status = 'PAID'
     WHERE c.is_deleted = false
+      AND c.shop_id = ${userShopId}
     GROUP BY c.id, c.name
     ORDER BY total_sales DESC
   `;
