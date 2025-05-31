@@ -4,7 +4,7 @@ import sendResponse from '../../utils/sendResponse';
 import SettingService from './setting.services';
 
 const GetSetting = catchAsync(async (req, res) => {
-  const result = await SettingService.GetSetting();
+  const result = await SettingService.GetSetting(req.user?.shop_id);
 
   sendResponse(res, {
     success: true,
@@ -15,7 +15,11 @@ const GetSetting = catchAsync(async (req, res) => {
 });
 
 const UpdateSetting = catchAsync(async (req, res) => {
-  const result = await SettingService.UpdateSetting(req.body);
+  const result = await SettingService.UpdateSetting(
+    req.user?.shop_id,
+    req.body,
+    req.file,
+  );
 
   sendResponse(res, {
     success: true,

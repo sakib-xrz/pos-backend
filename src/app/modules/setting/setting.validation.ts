@@ -26,19 +26,14 @@ const UpdateSettingSchema = z.object({
         .string({
           invalid_type_error: 'Phone number must be a string',
         })
-        .regex(/^[+]?[1-9][\d]{0,15}$/, 'Invalid phone number format')
+        .min(1, 'Phone number cannot be empty')
+        .max(15, 'Phone number cannot exceed 15 characters')
         .optional(),
       email: z
         .string({
           invalid_type_error: 'Email must be a string',
         })
         .email('Invalid email format')
-        .optional(),
-      logo_url: z
-        .string({
-          invalid_type_error: 'Logo URL must be a string',
-        })
-        .url('Invalid URL format')
         .optional(),
       receipt_header_text: z
         .string({
@@ -52,11 +47,7 @@ const UpdateSettingSchema = z.object({
         })
         .max(200, 'Receipt footer text cannot exceed 200 characters')
         .optional(),
-      show_logo_on_receipt: z
-        .boolean({
-          invalid_type_error: 'Show logo on receipt must be a boolean',
-        })
-        .optional(),
+      show_logo_on_receipt: z.string().optional(),
     })
     .refine(
       (data) => Object.keys(data).length > 0,

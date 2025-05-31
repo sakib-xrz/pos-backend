@@ -17,7 +17,8 @@ const catchAsync_1 = __importDefault(require("../../utils/catchAsync"));
 const sendResponse_1 = __importDefault(require("../../utils/sendResponse"));
 const setting_services_1 = __importDefault(require("./setting.services"));
 const GetSetting = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield setting_services_1.default.GetSetting();
+    var _a;
+    const result = yield setting_services_1.default.GetSetting((_a = req.user) === null || _a === void 0 ? void 0 : _a.shop_id);
     (0, sendResponse_1.default)(res, {
         success: true,
         statusCode: http_status_1.default.OK,
@@ -26,7 +27,8 @@ const GetSetting = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, voi
     });
 }));
 const UpdateSetting = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield setting_services_1.default.UpdateSetting(req.body);
+    var _a;
+    const result = yield setting_services_1.default.UpdateSetting((_a = req.user) === null || _a === void 0 ? void 0 : _a.shop_id, req.body, req.file);
     (0, sendResponse_1.default)(res, {
         success: true,
         statusCode: http_status_1.default.OK,
