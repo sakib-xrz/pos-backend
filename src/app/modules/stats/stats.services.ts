@@ -197,11 +197,11 @@ const GetCategorySales = async (userShopId?: string) => {
   >`
     SELECT 
       c.name as category_name,
-      COALESCE(SUM(oi.price * oi.quantity), 0) as total_sales
+      COALESCE(SUM(CASE WHEN o.status = 'PAID' THEN oi.price * oi.quantity ELSE 0 END), 0) as total_sales
     FROM category c
     LEFT JOIN product p ON p.category_id = c.id AND p.is_deleted = false
     LEFT JOIN order_item oi ON oi.product_id = p.id
-    LEFT JOIN "order" o ON o.id = oi.order_id AND o.status = 'PAID'
+    LEFT JOIN "order" o ON o.id = oi.order_id
     WHERE c.is_deleted = false
       AND c.shop_id = ${userShopId}
     GROUP BY c.id, c.name
