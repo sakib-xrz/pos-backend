@@ -16,7 +16,8 @@
     "migrate": "npx prisma migrate dev",
     "studio": "npx prisma studio",
     "seed": "ts-node prisma/seed.ts",
-    "db:reset": "npx prisma migrate reset && npm run seed"
+    "db:reset": "npx prisma migrate reset && npm run seed",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^5.11.0",
