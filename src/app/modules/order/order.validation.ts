@@ -33,6 +33,7 @@ const CreateOrderSchema = z.object({
       .string({
         invalid_type_error: 'Note must be a string',
       })
+      .nullable()
       .optional(),
     order_items: z
       .array(CreateOrderItemSchema, {
