@@ -46,9 +46,30 @@ const GetCategorySales = (0, catchAsync_1.default)((req, res) => __awaiter(void 
         data: result,
     });
 }));
+const GetSuperAdminStats = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield stats_services_1.default.GetSuperAdminStats();
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        statusCode: http_status_1.default.OK,
+        message: 'Super admin statistics retrieved successfully',
+        data: result,
+    });
+}));
+const GetRecentShopRegistrations = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const limit = req.query.limit ? parseInt(req.query.limit) : 10;
+    const result = yield stats_services_1.default.GetRecentShopRegistrations(limit);
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        statusCode: http_status_1.default.OK,
+        message: 'Recent shop registrations retrieved successfully',
+        data: result,
+    });
+}));
 const StatsController = {
     GetSummaryStats,
     GetWeeklySales,
     GetCategorySales,
+    GetSuperAdminStats,
+    GetRecentShopRegistrations,
 };
 exports.default = StatsController;

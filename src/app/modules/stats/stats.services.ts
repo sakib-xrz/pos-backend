@@ -226,10 +226,187 @@ const GetCategorySales = async (userShopId?: string) => {
   return categoryPercentages;
 };
 
+// Get super admin dashboard statistics
+const GetSuperAdminStats = async () => {
+  const now = new Date();
+  const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const endOfLastMonth = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    0,
+    23,
+    59,
+    59,
+    999,
+  );
+
+  // Execute all queries in parallel
+  const [
+    totalShops,
+    lastMonthShops,
+    activeShops,
+    totalUsers,
+    lastMonthUsers,
+    subscriptionStats,
+  ] = await Promise.all([
+    // Total shops count
+    prisma.shop.count(),
+
+    // Shops created last month
+    prisma.shop.count({
+      where: {
+        created_at: {
+          gte: startOfLastMonth,
+          lte: endOfLastMonth,
+        },
+      },
+    }),
+
+    // Active shops count
+    prisma.shop.count({
+      where: {
+        is_active: true,
+      },
+    }),
+
+    // Total users count (excluding SUPER_ADMIN)
+    prisma.user.count({
+      where: {
+        is_deleted: false,
+        role: {
+          not: 'SUPER_ADMIN',
+        },
+      },
+    }),
+
+    // Users created last month
+    prisma.user.count({
+      where: {
+        is_deleted: false,
+        role: {
+          not: 'SUPER_ADMIN',
+        },
+        created_at: {
+          gte: startOfLastMonth,
+          lte: endOfLastMonth,
+        },
+      },
+    }),
+
+    prisma.shop.groupBy({
+      by: ['subscription_plan'],
+      _count: {
+        id: true,
+      },
+      orderBy: {
+        _count: {
+          id: 'desc',
+        },
+      },
+    }),
+  ]);
+
+  const thisMonthShops = await prisma.shop.count({
+    where: {
+      created_at: {
+        gte: startOfThisMonth,
+      },
+    },
+  });
+
+  const thisMonthUsers = await prisma.user.count({
+    where: {
+      is_deleted: false,
+      role: {
+        not: 'SUPER_ADMIN',
+      },
+      created_at: {
+        gte: startOfThisMonth,
+      },
+    },
+  });
+
+  const shopsChange = thisMonthShops - lastMonthShops;
+  const usersChange = thisMonthUsers - lastMonthUsers;
+  const activeRate =
+    totalShops > 0 ? Math.round((activeShops / totalShops) * 100) : 0;
+
+  // Format subscription stats
+  const subscriptionBreakdown = subscriptionStats.reduce(
+    (acc, stat) => {
+      acc[stat.subscription_plan] = stat._count.id;
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
+
+  return {
+    total_shops: totalShops,
+    shops_change: shopsChange,
+    active_shops: activeShops,
+    active_rate: activeRate,
+    total_users: totalUsers,
+    users_change: usersChange,
+    subscription_breakdown: {
+      ONE_MONTH: subscriptionBreakdown.ONE_MONTH || 0,
+      SIX_MONTHS: subscriptionBreakdown.SIX_MONTHS || 0,
+      ONE_YEAR: subscriptionBreakdown.ONE_YEAR || 0,
+    },
+  };
+};
+
+// Get recent shop registrations
+const GetRecentShopRegistrations = async (limit: number = 5) => {
+  const recentShops = await prisma.shop.findMany({
+    select: {
+      id: true,
+      name: true,
+      branch_name: true,
+      created_at: true,
+    },
+    orderBy: {
+      created_at: 'desc',
+    },
+    take: limit,
+  });
+
+  // Format the response with relative time
+  const formatTimeAgo = (date: Date) => {
+    const now = new Date();
+    const diffInHours = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60),
+    );
+    const diffInDays = Math.floor(diffInHours / 24);
+    const diffInWeeks = Math.floor(diffInDays / 7);
+
+    if (diffInDays === 0) {
+      return 'Today';
+    } else if (diffInDays === 1) {
+      return '1 day ago';
+    } else if (diffInDays < 7) {
+      return `${diffInDays} days ago`;
+    } else if (diffInWeeks === 1) {
+      return '1 week ago';
+    } else {
+      return `${diffInWeeks} weeks ago`;
+    }
+  };
+
+  return recentShops.map((shop) => ({
+    id: shop.id,
+    name: shop.name,
+    branch_name: shop.branch_name,
+    time_ago: formatTimeAgo(shop.created_at),
+  }));
+};
+
 const StatsService = {
   GetSummaryStats,
   GetWeeklySales,
   GetCategorySales,
+  GetSuperAdminStats,
+  GetRecentShopRegistrations,
 };
 
 export default StatsService;

@@ -18,4 +18,18 @@ router.get(
   StatsController.GetCategorySales,
 );
 
+// GET /api/v1/stats/super-admin - Get super admin dashboard stats
+router.get(
+  '/super-admin',
+  auth(Role.SUPER_ADMIN),
+  StatsController.GetSuperAdminStats,
+);
+
+// GET /api/v1/stats/recent-shops - Get recent shop registrations
+router.get(
+  '/recent-shops',
+  auth(Role.SUPER_ADMIN),
+  StatsController.GetRecentShopRegistrations,
+);
+
 export const StatsRoutes = router;

@@ -36,10 +36,35 @@ const GetCategorySales = catchAsync(async (req, res) => {
   });
 });
 
+const GetSuperAdminStats = catchAsync(async (req, res) => {
+  const result = await StatsService.GetSuperAdminStats();
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'Super admin statistics retrieved successfully',
+    data: result,
+  });
+});
+
+const GetRecentShopRegistrations = catchAsync(async (req, res) => {
+  const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+  const result = await StatsService.GetRecentShopRegistrations(limit);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'Recent shop registrations retrieved successfully',
+    data: result,
+  });
+});
+
 const StatsController = {
   GetSummaryStats,
   GetWeeklySales,
   GetCategorySales,
+  GetSuperAdminStats,
+  GetRecentShopRegistrations,
 };
 
 export default StatsController;
