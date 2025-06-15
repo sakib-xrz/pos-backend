@@ -846,6 +846,11 @@
                   "type": "text"
                 },
                 {
+                  "key": "barcode",
+                  "value": "123456789",
+                  "type": "text"
+                },
+                {
                   "key": "is_available",
                   "value": "true",
                   "type": "text"
@@ -855,6 +860,96 @@
                   "type": "file",
                   "src": [],
                   "disabled": true
+                },
+                {
+                  "key": "pharmacy_product_details[manufacturer]",
+                  "value": "Pharma Inc",
+                  "type": "text",
+                  "description": "For pharmacy products only"
+                },
+                {
+                  "key": "pharmacy_product_details[dosage]",
+                  "value": "10mg",
+                  "type": "text",
+                  "description": "For pharmacy products only"
+                },
+                {
+                  "key": "pharmacy_product_details[form]",
+                  "value": "Tablet",
+                  "type": "text",
+                  "description": "For pharmacy products only"
+                },
+                {
+                  "key": "pharmacy_product_details[pack_size]",
+                  "value": "30 tablets",
+                  "type": "text",
+                  "description": "For pharmacy products only"
+                },
+                {
+                  "key": "pharmacy_product_details[description]",
+                  "value": "Pain relief medicine",
+                  "type": "text",
+                  "description": "For pharmacy products only"
+                },
+                {
+                  "key": "pharmacy_product_details[discount]",
+                  "value": "10",
+                  "type": "text",
+                  "description": "For pharmacy products only"
+                },
+                {
+                  "key": "pharmacy_product_details[discount_type]",
+                  "value": "PERCENTAGE",
+                  "type": "text",
+                  "description": "For pharmacy products only (PERCENTAGE or FIXED)"
+                },
+                {
+                  "key": "pharmacy_product_details[stock]",
+                  "value": "100",
+                  "type": "text",
+                  "description": "For pharmacy products only"
+                },
+                {
+                  "key": "pharmacy_product_details[in_stock]",
+                  "value": "true",
+                  "type": "text",
+                  "description": "For pharmacy products only"
+                },
+                {
+                  "key": "pharmacy_product_details[expiry_date]",
+                  "value": "2024-12-31",
+                  "type": "text",
+                  "description": "For pharmacy products only (YYYY-MM-DD)"
+                },
+                {
+                  "key": "restaurant_product_details[description]",
+                  "value": "Delicious cheeseburger",
+                  "type": "text",
+                  "description": "For restaurant products only"
+                },
+                {
+                  "key": "restaurant_product_details[preparation_time]",
+                  "value": "15",
+                  "type": "text",
+                  "description": "For restaurant products only (in minutes)"
+                },
+                {
+                  "key": "restaurant_product_details[is_vegetarian]",
+                  "value": "false",
+                  "type": "text",
+                  "description": "For restaurant products only"
+                },
+                {
+                  "key": "restaurant_product_details[is_vegan]",
+                  "value": "false",
+                  "type": "text",
+                  "description": "For restaurant products only"
+                },
+                {
+                  "key": "restaurant_product_details[is_spicy]",
+                  "value": "true",
+                  "type": "text",
+                  "description": "For restaurant products only"
                 }
               ]
             },
@@ -1180,7 +1275,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"payment_type\": \"CASH\",\n  \"table_number\": \"T-001\",\n  \"note\": \"Extra spicy\",\n  \"order_items\": [\n    {\n      \"product_id\": \"{{product_id}}\",\n      \"quantity\": 2,\n      \"price\": 12.99\n    },\n    {\n      \"product_id\": \"{{product_id}}\",\n      \"quantity\": 1,\n      \"price\": 4.99\n    }\n  ]\n}"
+              "raw": "{\n  \"payment_type\": \"CASH\",\n  \"note\": \"Extra spicy\",\n  \"order_items\": [\n    {\n      \"product_id\": \"{{product_id}}\",\n      \"quantity\": 2,\n      \"price\": 12.99,\n      \"discount_amount\": 2.00\n    },\n    {\n      \"product_id\": \"{{product_id}}\",\n      \"quantity\": 1,\n      \"price\": 4.99,\n      \"discount_amount\": 0.50\n    }\n  ]\n}"
             },
             "url": {
               "raw": "{{base_url}}/orders",

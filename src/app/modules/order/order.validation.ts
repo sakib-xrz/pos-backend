@@ -21,6 +21,12 @@ const CreateOrderItemSchema = z.object({
       invalid_type_error: 'Price must be a number',
     })
     .positive('Price must be positive'),
+  discount_amount: z
+    .number({
+      invalid_type_error: 'Discount amount must be a number',
+    })
+    .min(0, 'Discount amount cannot be negative')
+    .optional(),
 });
 
 const CreateOrderSchema = z.object({

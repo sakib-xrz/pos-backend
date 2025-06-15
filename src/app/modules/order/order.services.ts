@@ -20,16 +20,16 @@ interface CreateOrderItem {
   product_id: string;
   quantity: number;
   price: number;
+  discount_amount?: number;
 }
 
 interface CreateOrderPayload {
   payment_type: PaymentType;
-  table_number?: string;
   note?: string;
   order_items: CreateOrderItem[];
 }
 
-const generateOrderNumber = (): string => {
+const generateOrderNumber = () => {
   const uuid = uuidv4();
   const alphanumeric = uuid.replace(/[^a-z0-9]/gi, '');
   return alphanumeric.substring(0, 6).toUpperCase();
@@ -45,16 +45,13 @@ const GetOrders = async (query: GetOrdersQuery, userShopId?: string) => {
     ...paginationOptions
   } = query;
 
-  // Calculate pagination with your utility
   const { page, limit, skip, sort_by, sort_order } =
     calculatePagination(paginationOptions);
 
-  // Build where clause for optimized filtering
   const whereClause: Prisma.OrderWhereInput = {
     shop_id: userShopId,
   };
 
-  // Add search filter
   if (search) {
     whereClause.order_number = {
       contains: search,
@@ -62,17 +59,14 @@ const GetOrders = async (query: GetOrdersQuery, userShopId?: string) => {
     };
   }
 
-  // Add status filter
   if (status) {
     whereClause.status = status;
   }
 
-  // Add payment type filter
   if (payment_type) {
     whereClause.payment_type = payment_type;
   }
 
-  // Add date range filter
   if (date_from || date_to) {
     whereClause.created_at = {};
 
@@ -85,10 +79,8 @@ const GetOrders = async (query: GetOrdersQuery, userShopId?: string) => {
     }
   }
 
-  // Build dynamic order by clause
   const orderBy: Prisma.OrderOrderByWithRelationInput[] = [];
 
-  // Map sort_by to proper Prisma field
   const sortField = sort_by as keyof Prisma.OrderOrderByWithRelationInput;
 
   if (
@@ -102,21 +94,21 @@ const GetOrders = async (query: GetOrdersQuery, userShopId?: string) => {
   ) {
     orderBy.push({ [sortField]: sort_order as 'asc' | 'desc' });
   } else {
-    // Default sorting: newest orders first
     orderBy.push({ created_at: 'desc' });
   }
 
-  // Execute optimized queries in parallel
   const [orders, total] = await Promise.all([
     prisma.order.findMany({
       where: whereClause,
       select: {
         id: true,
         order_number: true,
+        sub_total_amount: true,
+        tax_amount: true,
         total_amount: true,
         status: true,
-        created_at: true,
         payment_type: true,
+        created_at: true,
         user: {
           select: {
             name: true,
@@ -172,16 +164,6 @@ const GetOrderById = async (id: string, userShopId?: string) => {
           },
         },
       },
-      receipt: {
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-        },
-      },
     },
   });
 
@@ -214,11 +196,17 @@ const CreateOrder = async (
     );
   }
 
-  // Calculate total amount
-  const totalAmount = payload.order_items.reduce(
+  // Calculate sub total amount
+  const subTotalAmount = payload.order_items.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0,
   );
+
+  // Calculate tax amount (assuming 15% tax rate)
+  const taxAmount = subTotalAmount * 0.15;
+
+  // Calculate total amount
+  const totalAmount = subTotalAmount + taxAmount;
 
   // Generate unique order number
   let orderNumber = generateOrderNumber();
@@ -239,6 +227,8 @@ const CreateOrder = async (
     const newOrder = await tx.order.create({
       data: {
         order_number: orderNumber,
+        sub_total_amount: subTotalAmount,
+        tax_amount: taxAmount,
         total_amount: totalAmount,
         status: OrderStatus.OPEN,
         payment_type: payload.payment_type,
@@ -255,6 +245,8 @@ const CreateOrder = async (
         product_id: item.product_id,
         quantity: item.quantity,
         price: item.price,
+        discount_amount: item.discount_amount || 0,
+        final_price: item.price * item.quantity - (item.discount_amount || 0),
       })),
     });
 

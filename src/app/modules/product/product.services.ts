@@ -1,5 +1,5 @@
 import httpStatus from 'http-status';
-import { Prisma } from '@prisma/client';
+import { Prisma, ShopType } from '@prisma/client';
 import AppError from '../../errors/AppError';
 import prisma from '../../utils/prisma';
 import {
@@ -18,19 +18,46 @@ export interface GetProductsQuery extends IPaginationOptions {
   is_available?: boolean | string;
 }
 
+export interface PharmacyProductDetailsPayload {
+  dosage?: string;
+  form?: string;
+  pack_size?: string;
+  manufacturer: string;
+  description?: string;
+  discount?: number;
+  discount_type?: 'PERCENTAGE' | 'FIXED';
+  stock?: number;
+  in_stock?: boolean;
+  expiry_date?: Date;
+}
+
+export interface RestaurantProductDetailsPayload {
+  description?: string;
+  preparation_time?: number;
+  is_vegetarian?: boolean;
+  is_vegan?: boolean;
+  is_spicy?: boolean;
+}
+
 export interface CreateProductPayload {
   name: string;
   price: number;
   category_id: string;
+  barcode?: string;
   image?: Express.Multer.File;
   is_available?: boolean | string;
+  pharmacy_product_details?: PharmacyProductDetailsPayload;
+  restaurant_product_details?: RestaurantProductDetailsPayload;
 }
 
 export interface UpdateProductPayload {
   name?: string;
   price?: number;
   category_id?: string;
+  barcode?: string;
   is_available?: boolean | string;
+  pharmacy_product_details?: PharmacyProductDetailsPayload;
+  restaurant_product_details?: RestaurantProductDetailsPayload;
 }
 
 const GetProducts = async (query: GetProductsQuery, userShopId?: string) => {
@@ -132,6 +159,16 @@ const CreateProduct = async (
   shopId: string,
   file?: Express.Multer.File,
 ) => {
+  // Get shop type
+  const shop = await prisma.shop.findUnique({
+    where: { id: shopId },
+    select: { type: true },
+  });
+
+  if (!shop) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Shop not found');
+  }
+
   // Verify category exists, is not deleted, and belongs to the same shop
   const category = await prisma.category.findFirst({
     where: {
@@ -146,6 +183,23 @@ const CreateProduct = async (
       httpStatus.NOT_FOUND,
       'Category not found or does not belong to your shop',
     );
+  }
+
+  // Check if barcode is unique if provided
+  if (payload.barcode) {
+    const existingProduct = await prisma.product.findFirst({
+      where: {
+        barcode: payload.barcode,
+        is_deleted: false,
+      },
+    });
+
+    if (existingProduct) {
+      throw new AppError(
+        httpStatus.CONFLICT,
+        'Product with this barcode already exists',
+      );
+    }
   }
 
   let imageUrl: string | undefined;
@@ -167,14 +221,97 @@ const CreateProduct = async (
     }
   }
 
+  // Validate shop-specific details
+  if (shop.type === ShopType.PHARMACY && !payload.pharmacy_product_details) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'Pharmacy product details are required for pharmacy products',
+    );
+  }
+
+  if (
+    shop.type === ShopType.RESTAURANT &&
+    !payload.restaurant_product_details
+  ) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'Restaurant product details are required for restaurant products',
+    );
+  }
+
   const product = await prisma.product.create({
     data: {
       name: payload.name,
-      price: payload.price,
+      price:
+        typeof payload.price === 'string'
+          ? parseFloat(payload.price)
+          : payload.price,
       image: imageUrl,
+      barcode: payload.barcode,
       category_id: payload.category_id,
       shop_id: shopId,
       is_available: payload.is_available === 'true' ? true : false,
+      pharmacy_product_details:
+        shop.type === ShopType.PHARMACY && payload.pharmacy_product_details
+          ? {
+              create: {
+                dosage: payload.pharmacy_product_details.dosage,
+                form: payload.pharmacy_product_details.form,
+                pack_size: payload.pharmacy_product_details.pack_size,
+                manufacturer: payload.pharmacy_product_details.manufacturer,
+                description: payload.pharmacy_product_details.description,
+                discount:
+                  typeof payload.pharmacy_product_details.discount === 'string'
+                    ? parseFloat(payload.pharmacy_product_details.discount)
+                    : payload.pharmacy_product_details.discount,
+                discount_type: payload.pharmacy_product_details.discount_type,
+                stock:
+                  typeof payload.pharmacy_product_details.stock === 'string'
+                    ? parseInt(payload.pharmacy_product_details.stock)
+                    : payload.pharmacy_product_details.stock,
+                in_stock:
+                  typeof payload.pharmacy_product_details.in_stock === 'string'
+                    ? payload.pharmacy_product_details.in_stock === 'true'
+                    : payload.pharmacy_product_details.in_stock,
+                expiry_date:
+                  typeof payload.pharmacy_product_details.expiry_date ===
+                  'string'
+                    ? new Date(payload.pharmacy_product_details.expiry_date)
+                    : payload.pharmacy_product_details.expiry_date,
+              },
+            }
+          : undefined,
+      restaurant_product_details:
+        shop.type === ShopType.RESTAURANT && payload.restaurant_product_details
+          ? {
+              create: {
+                description: payload.restaurant_product_details.description,
+                preparation_time:
+                  typeof payload.restaurant_product_details.preparation_time ===
+                  'string'
+                    ? parseInt(
+                        payload.restaurant_product_details.preparation_time,
+                      )
+                    : payload.restaurant_product_details.preparation_time,
+                is_vegetarian:
+                  typeof payload.restaurant_product_details.is_vegetarian ===
+                  'string'
+                    ? payload.restaurant_product_details.is_vegetarian ===
+                      'true'
+                    : payload.restaurant_product_details.is_vegetarian,
+                is_vegan:
+                  typeof payload.restaurant_product_details.is_vegan ===
+                  'string'
+                    ? payload.restaurant_product_details.is_vegan === 'true'
+                    : payload.restaurant_product_details.is_vegan,
+                is_spicy:
+                  typeof payload.restaurant_product_details.is_spicy ===
+                  'string'
+                    ? payload.restaurant_product_details.is_spicy === 'true'
+                    : payload.restaurant_product_details.is_spicy,
+              },
+            }
+          : undefined,
     },
     include: {
       category: {
@@ -191,6 +328,8 @@ const CreateProduct = async (
           type: true,
         },
       },
+      pharmacy_product_details: true,
+      restaurant_product_details: true,
     },
   });
 
@@ -209,6 +348,15 @@ const UpdateProduct = async (
       id,
       is_deleted: false,
       shop_id: user?.shop_id,
+    },
+    include: {
+      shop: {
+        select: {
+          type: true,
+        },
+      },
+      pharmacy_product_details: true,
+      restaurant_product_details: true,
     },
   });
 
@@ -273,7 +421,6 @@ const UpdateProduct = async (
           await deleteFromCloudinary([publicId]);
         }
       }
-
       // Upload new image
       const uploadResult = await uploadToCloudinary(file, {
         folder: 'products',
@@ -289,12 +436,76 @@ const UpdateProduct = async (
     }
   }
 
+  // Handle shop-specific details update
+  const pharmacyDetailsUpdate =
+    existingProduct.shop.type === ShopType.PHARMACY &&
+    payload.pharmacy_product_details
+      ? {
+          upsert: {
+            create: {
+              dosage: payload.pharmacy_product_details.dosage,
+              form: payload.pharmacy_product_details.form,
+              pack_size: payload.pharmacy_product_details.pack_size,
+              manufacturer: payload.pharmacy_product_details.manufacturer,
+              description: payload.pharmacy_product_details.description,
+              discount: payload.pharmacy_product_details.discount,
+              discount_type: payload.pharmacy_product_details.discount_type,
+              stock: payload.pharmacy_product_details.stock,
+              in_stock: payload.pharmacy_product_details.in_stock,
+              expiry_date: payload.pharmacy_product_details.expiry_date,
+            },
+            update: {
+              dosage: payload.pharmacy_product_details.dosage,
+              form: payload.pharmacy_product_details.form,
+              pack_size: payload.pharmacy_product_details.pack_size,
+              manufacturer: payload.pharmacy_product_details.manufacturer,
+              description: payload.pharmacy_product_details.description,
+              discount: payload.pharmacy_product_details.discount,
+              discount_type: payload.pharmacy_product_details.discount_type,
+              stock: payload.pharmacy_product_details.stock,
+              in_stock: payload.pharmacy_product_details.in_stock,
+              expiry_date: payload.pharmacy_product_details.expiry_date,
+            },
+          },
+        }
+      : undefined;
+
+  const restaurantDetailsUpdate =
+    existingProduct.shop.type === ShopType.RESTAURANT &&
+    payload.restaurant_product_details
+      ? {
+          upsert: {
+            create: {
+              description: payload.restaurant_product_details.description,
+              preparation_time:
+                payload.restaurant_product_details.preparation_time,
+              is_vegetarian: payload.restaurant_product_details.is_vegetarian,
+              is_vegan: payload.restaurant_product_details.is_vegan,
+              is_spicy: payload.restaurant_product_details.is_spicy,
+            },
+            update: {
+              description: payload.restaurant_product_details.description,
+              preparation_time:
+                payload.restaurant_product_details.preparation_time,
+              is_vegetarian: payload.restaurant_product_details.is_vegetarian,
+              is_vegan: payload.restaurant_product_details.is_vegan,
+              is_spicy: payload.restaurant_product_details.is_spicy,
+            },
+          },
+        }
+      : undefined;
+
   const updatedProduct = await prisma.product.update({
     where: { id },
     data: {
-      ...payload,
+      name: payload.name,
+      price: payload.price,
       image: imageUrl,
-      is_available: payload.is_available === 'true',
+      barcode: payload.barcode,
+      category_id: payload.category_id,
+      is_available: payload.is_available === 'true' ? true : false,
+      pharmacy_product_details: pharmacyDetailsUpdate,
+      restaurant_product_details: restaurantDetailsUpdate,
     },
     include: {
       category: {
@@ -304,6 +515,15 @@ const UpdateProduct = async (
           image: true,
         },
       },
+      shop: {
+        select: {
+          id: true,
+          name: true,
+          type: true,
+        },
+      },
+      pharmacy_product_details: true,
+      restaurant_product_details: true,
     },
   });
 

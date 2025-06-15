@@ -45,13 +45,6 @@ enum DiscountType {
   FIXED
 }
 
-enum PrescriptionStatus {
-  NOT_REQUIRED
-  PENDING
-  VERIFIED
-  REJECTED
-}
-
 model Shop {
   id                 String           @id @default(uuid())
   name               String
@@ -70,7 +63,6 @@ model Shop {
   categories Category[]
   products   Product[]
   orders     Order[]
-  receipts   Receipt[]
 
   @@map("shop")
 }
@@ -87,9 +79,8 @@ model User {
   updated_at DateTime @updatedAt
 
   // relations
-  shop     Shop?     @relation("ShopUsers", fields: [shop_id], references: [id], onDelete: Cascade)
-  orders   Order[]   @relation("UserOrders")
-  receipts Receipt[] @relation("PrintedByUser")
+  shop   Shop?   @relation("ShopUsers", fields: [shop_id], references: [id], onDelete: Cascade)
+  orders Order[] @relation("UserOrders")
 
   @@index([is_deleted])
   @@map("user")
@@ -127,10 +118,13 @@ model Product {
   updated_at   DateTime @updatedAt
 
   // relations
-  category         Category                @relation(fields: [category_id], references: [id], onDelete: Restrict)
-  shop             Shop                    @relation(fields: [shop_id], references: [id], onDelete: Cascade)
-  order_items      OrderItem[]
-  pharmacy_details PharmacyProductDetails?
+  category    Category?   @relation(fields: [category_id], references: [id], onDelete: Restrict)
+  shop        Shop        @relation(fields: [shop_id], references: [id], onDelete: Cascade)
+  order_items OrderItem[]
+
+  // Shop type specific relations
+  pharmacy_product_details   PharmacyProductDetails?
+  restaurant_product_details RestaurantProductDetails?
 
   @@index([category_id])
   @@index([is_available])
@@ -140,21 +134,20 @@ model Product {
 }
 
 model PharmacyProductDetails {
-  id                    String       @id @default(uuid())
-  product_id            String       @unique
-  dosage                String?
-  form                  String?
-  pack_size             String?
-  manufacturer          String
-  description           String
-  requires_prescription Boolean
-  discount              Decimal
-  discount_type         DiscountType @default(PERCENTAGE)
-  stock                 Int
-  in_stock              Boolean
-  expiry_date           DateTime
-  created_at            DateTime     @default(now())
-  updated_at            DateTime     @updatedAt
+  id            String       @id @default(uuid())
+  product_id    String       @unique
+  dosage        String?
+  form          String?
+  pack_size     String?
+  manufacturer  String
+  description   String?
+  discount      Decimal?
+  discount_type DiscountType @default(PERCENTAGE)
+  stock         Int?
+  in_stock      Boolean?
+  expiry_date   DateTime?
+  created_at    DateTime     @default(now())
+  updated_at    DateTime     @updatedAt
 
   // relations
   product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
@@ -162,50 +155,56 @@ model PharmacyProductDetails {
   @@map("pharmacy_product_details")
 }
 
-model Order {
-  id           String      @id @default(uuid())
-  order_number String      @unique
-  total_amount Decimal
-  status       OrderStatus
-  payment_type PaymentType
-  note         String?
-  created_by   String
-  shop_id      String
-  created_at   DateTime    @default(now())
-  updated_at   DateTime    @updatedAt
+model RestaurantProductDetails {
+  id               String   @id @default(uuid())
+  product_id       String   @unique
+  description      String?
+  preparation_time Int?
+  is_vegetarian    Boolean  @default(false)
+  is_vegan         Boolean  @default(false)
+  is_spicy         Boolean  @default(false)
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
 
-  // these new fields for pharmacy orders
-  prescription_status PrescriptionStatus? @default(NOT_REQUIRED)
-  prescription_url    String?
-  doctor_name         String?
-  patient_name        String?
-  patient_age         Int?
-  patient_gender      String?
+  // relations
+  product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@map("restaurant_product_details")
+}
+
+model Order {
+  id               String      @id @default(uuid())
+  order_number     String      @unique
+  sub_total_amount Decimal
+  tax_amount       Decimal?
+  total_amount     Decimal
+  status           OrderStatus
+  payment_type     PaymentType
+  note             String?
+  created_by       String
+  shop_id          String
+  created_at       DateTime    @default(now())
+  updated_at       DateTime    @updatedAt
 
   // relations
   user        User        @relation("UserOrders", fields: [created_by], references: [id], onDelete: Restrict)
   shop        Shop        @relation(fields: [shop_id], references: [id], onDelete: Cascade)
   order_items OrderItem[]
-  receipt     Receipt?
 
   @@index([created_by])
   @@index([status])
   @@index([created_at])
-  @@index([prescription_status])
   @@map("order")
 }
 
 model OrderItem {
-  id              String    @id @default(uuid())
+  id              String   @id @default(uuid())
   order_id        String
   product_id      String
   quantity        Int
   price           Decimal
-  // Add these new fields for pharmacy order items
-  discount_amount Decimal?  @default(0)
+  discount_amount Decimal? @default(0)
   final_price     Decimal
-  batch_number    String?
-  expiry_date     DateTime?
 
   // relations
   order   Order   @relation(fields: [order_id], references: [id], onDelete: Cascade)
@@ -214,23 +213,6 @@ model OrderItem {
   @@index([order_id])
   @@index([product_id])
   @@map("order_item")
-}
-
-model Receipt {
-  id         String   @id @default(uuid())
-  order_id   String   @unique
-  printed_by String?
-  shop_id    String
-  printed_at DateTime @default(now())
-
-  // relations
-  order Order @relation(fields: [order_id], references: [id], onDelete: Cascade)
-  user  User? @relation("PrintedByUser", fields: [printed_by], references: [id], onDelete: SetNull)
-  shop  Shop  @relation(fields: [shop_id], references: [id], onDelete: Cascade)
-
-  @@index([printed_by])
-  @@index([printed_at])
-  @@map("receipt")
 }
 
 model Setting {
