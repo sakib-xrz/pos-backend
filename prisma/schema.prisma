@@ -40,6 +40,18 @@ enum SubscriptionPlan {
   ONE_YEAR
 }
 
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+enum PrescriptionStatus {
+  NOT_REQUIRED
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
 model Shop {
   id                 String           @id @default(uuid())
   name               String
@@ -106,6 +118,7 @@ model Product {
   name         String
   price        Decimal
   image        String?
+  barcode      String?  @unique
   category_id  String
   shop_id      String
   is_available Boolean  @default(true)
@@ -114,14 +127,39 @@ model Product {
   updated_at   DateTime @updatedAt
 
   // relations
-  category    Category    @relation(fields: [category_id], references: [id], onDelete: Restrict)
-  shop        Shop        @relation(fields: [shop_id], references: [id], onDelete: Cascade)
-  order_items OrderItem[]
+  category         Category                @relation(fields: [category_id], references: [id], onDelete: Restrict)
+  shop             Shop                    @relation(fields: [shop_id], references: [id], onDelete: Cascade)
+  order_items      OrderItem[]
+  pharmacy_details PharmacyProductDetails?
 
   @@index([category_id])
   @@index([is_available])
   @@index([is_deleted])
+  @@index([barcode])
   @@map("product")
+}
+
+model PharmacyProductDetails {
+  id                    String       @id @default(uuid())
+  product_id            String       @unique
+  dosage                String?
+  form                  String?
+  pack_size             String?
+  manufacturer          String
+  description           String
+  requires_prescription Boolean
+  discount              Decimal
+  discount_type         DiscountType @default(PERCENTAGE)
+  stock                 Int
+  in_stock              Boolean
+  expiry_date           DateTime
+  created_at            DateTime     @default(now())
+  updated_at            DateTime     @updatedAt
+
+  // relations
+  product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@map("pharmacy_product_details")
 }
 
 model Order {
@@ -136,6 +174,14 @@ model Order {
   created_at   DateTime    @default(now())
   updated_at   DateTime    @updatedAt
 
+  // these new fields for pharmacy orders
+  prescription_status PrescriptionStatus? @default(NOT_REQUIRED)
+  prescription_url    String?
+  doctor_name         String?
+  patient_name        String?
+  patient_age         Int?
+  patient_gender      String?
+
   // relations
   user        User        @relation("UserOrders", fields: [created_by], references: [id], onDelete: Restrict)
   shop        Shop        @relation(fields: [shop_id], references: [id], onDelete: Cascade)
@@ -145,15 +191,21 @@ model Order {
   @@index([created_by])
   @@index([status])
   @@index([created_at])
+  @@index([prescription_status])
   @@map("order")
 }
 
 model OrderItem {
-  id         String  @id @default(uuid())
-  order_id   String
-  product_id String
-  quantity   Int
-  price      Decimal
+  id              String    @id @default(uuid())
+  order_id        String
+  product_id      String
+  quantity        Int
+  price           Decimal
+  // Add these new fields for pharmacy order items
+  discount_amount Decimal?  @default(0)
+  final_price     Decimal
+  batch_number    String?
+  expiry_date     DateTime?
 
   // relations
   order   Order   @relation(fields: [order_id], references: [id], onDelete: Cascade)
